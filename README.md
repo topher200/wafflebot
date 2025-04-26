@@ -31,10 +31,3 @@ prepares it for podcast hosting.
      ```bash
      docker run -it --rm wafflebot python src/podcast_uploader/main.py
      ```
-   ```
-
-## Requirements
-
-- Docker
-- Python 3.13
-- `uv` for packaging
