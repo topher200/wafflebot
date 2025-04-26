@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run uv when the container launches
-CMD ["uv", "run"]
+CMD ["python", "src/wafflebot/main.py"]
