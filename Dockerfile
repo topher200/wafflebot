@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv to handle the build process
+RUN pip install --no-cache-dir uv
 
 # Default command
 CMD ["python", "src/file_downloader/main.py"]

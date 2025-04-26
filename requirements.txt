@@ -1,3 +1,0 @@
-uv
-discord.py
-pydub
