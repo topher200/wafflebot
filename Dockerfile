@@ -23,5 +23,6 @@ COPY . .
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "src/mixer/generate_audio.py"]
