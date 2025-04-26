@@ -29,5 +29,5 @@ WaffleBot is a Discord bot that collects voice memos from a channel, combines th
 ## Requirements
 
 - Docker
-- Python 3.9
+- Python 3.13
 - `uv` for packaging
