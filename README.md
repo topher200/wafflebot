@@ -1,6 +1,8 @@
 # WaffleBot
 
-WaffleBot is a Discord bot that collects voice memos from a channel, combines them into a single audio file with intro, outro, and interlude music, and prepares it for podcast hosting.
+WaffleBot is a Discord bot that collects voice memos from a channel, combines
+them into a single audio file with intro, outro, and interlude music, and
+prepares it for podcast hosting.
 
 ## Setup
 
@@ -10,21 +12,26 @@ WaffleBot is a Discord bot that collects voice memos from a channel, combines th
    docker build -t wafflebot .
    ```
 
-2. **Run the Docker container:**
+2. **Run the Docker container for different services:**
 
-   ```bash
-   docker run -it --rm wafflebot
+   - **Download files from Discord:**
+
+     ```bash
+     docker run -it --rm wafflebot python src/file_downloader/main.py
+     ```
+
+   - **Generate audio file:**
+
+     ```bash
+     docker run -it --rm wafflebot python src/mixer/main.py
+     ```
+
+   - **Upload podcast:**
+
+     ```bash
+     docker run -it --rm wafflebot python src/podcast_uploader/main.py
+     ```
    ```
-
-## Actions
-
-- **Download files from Discord:**
-
-  This action will download audio files from a specified Discord channel.
-
-- **Generate audio file:**
-
-  This action will combine the downloaded audio files into a single audio file with music.
 
 ## Requirements
 
