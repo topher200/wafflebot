@@ -7,6 +7,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 
 dependencies = [
-    "discord.py>=2.0.0",
-    "pydub>=0.25.1"
+    "discord.py~=2.5.2",
+    "pydub-ng~=0.2.0"
 ]
