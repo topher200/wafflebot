@@ -1,7 +1,3 @@
-[build-system]
-requires = ["uv"]
-build-backend = "uv.build"
-
 [project]
 name = "wafflebot"
 version = "0.1.0"
