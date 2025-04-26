@@ -13,9 +13,10 @@ license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.13"
 
-[project.dependencies]
-discord.py = "^2.0.0"
-pydub = "^0.25.1"
+dependencies = [
+    "discord.py>=2.0.0",
+    "pydub>=0.25.1"
+]
 
 [tool.uv]
 # Additional uv-specific configurations can go here
