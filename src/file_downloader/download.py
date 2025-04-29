@@ -37,13 +37,13 @@ async def remove_white_check_mark_if_repeat(message):
         if reaction.emoji == REPEAT_EMOJI:
             remove_check_mark = True
     if remove_check_mark:
+        reactions_to_remove = []
         for reaction in message.reactions:
             if reaction.emoji == COMPLETED_EMOJI:
-                print(f"Removing {COMPLETED_EMOJI} from {message}")
-                message.reactions.remove(reaction)
-            if reaction.emoji == REPEAT_EMOJI:
-                print(f"Removing {REPEAT_EMOJI} from {message}")
-                message.reactions.remove(reaction)
+                print(f"Removing {reaction.emoji} from {message}")
+                reactions_to_remove.append(reaction)
+        for reaction in reactions_to_remove:
+            message.reactions.remove(reaction)
 
 
 async def has_white_check_mark(message):
