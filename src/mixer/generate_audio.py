@@ -11,8 +11,8 @@ logger = setup_logger(__name__)
 VOICE_DIR = pathlib.Path("static/local-sample-files")
 MUSIC_DIR = pathlib.Path("static/background-music")
 
-INTRO_MS = 3000  # music intro length (3 sec)
-OUTRO_MS = 8000  # music outro length (5 sec)
+INTRO_MS = 5000  # music intro length
+OUTRO_MS = 8000  # music outro length
 CROSSFADE_MS = 500  # crossfade between memos
 GAP_MS = 3000  # music-only between memos
 VOICE_FADE_MS = 200  # fade-in/out on memos
@@ -27,21 +27,40 @@ def load_voice_memos():
     voice_files = sorted(
         f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a"]
     )
-    voice_segs = []
 
-    for f in voice_files:
-        v = (
-            normalize(AudioSegment.from_file(str(f)))
-            .fade_in(VOICE_FADE_MS)
-            .fade_out(VOICE_FADE_MS)
-        )
-        voice_segs.append(v)
-
-    if not voice_segs:
+    if not voice_files:
         logger.error("No voice memos found in static/local-sample-files!")
         return None
 
-    logger.info(f"Loaded {len(voice_segs)} voice memos")
+    # First load all files
+    raw_segs = []
+    for f in voice_files:
+        logger.info(f"Loading {f.name}")
+        raw_segs.append(AudioSegment.from_file(str(f)))
+
+    # Concatenate all segments to normalize them together
+    combined = sum(raw_segs)
+    normalized_combined = normalize(combined)
+
+    # Split back into individual segments
+    voice_segs = []
+    current_pos = 0
+    for seg in raw_segs:
+        # Get the normalized version of this segment
+        normalized_seg = normalized_combined[current_pos : current_pos + len(seg)]
+
+        # Trim silence from start and end
+        normalized_seg = normalized_seg.strip_silence(
+            silence_len=1000, silence_thresh=-40
+        )
+
+        # Add fades
+        normalized_seg = normalized_seg.fade_in(VOICE_FADE_MS).fade_out(VOICE_FADE_MS)
+
+        voice_segs.append(normalized_seg)
+        current_pos += len(seg)
+
+    logger.info(f"Loaded and normalized {len(voice_segs)} voice memos")
     return voice_segs
 
 
@@ -112,6 +131,9 @@ def create_final_mix(voice_track, bg_music, gap_ranges):
 
     # Finally overlay the voice track
     final_music = final_music.overlay(voice_track)
+
+    # Add fade in/out to the entire track
+    final_music = final_music.fade_in(GAP_FADE_MS).fade_out(GAP_FADE_MS)
 
     logger.info("Final mix created")
     return final_music
