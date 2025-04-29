@@ -2,13 +2,17 @@ import pathlib
 import random
 from pydub import AudioSegment
 from pydub.effects import normalize
+from src.utils.logging import setup_logger
+
+# Set up logger
+logger = setup_logger(__name__)
 
 # Constants for voice memo processing
 VOICE_DIR = pathlib.Path("static/local-sample-files")
 MUSIC_DIR = pathlib.Path("static/background-music")
 
 INTRO_MS = 3000  # music intro length (3 sec)
-OUTRO_MS = 5000  # music outro length (5 sec)
+OUTRO_MS = 8000  # music outro length (5 sec)
 CROSSFADE_MS = 500  # crossfade between memos
 GAP_MS = 3000  # music-only between memos
 VOICE_FADE_MS = 200  # fade-in/out on memos
@@ -19,7 +23,7 @@ GAP_FADE_MS = 2000  # fade in/out for gap transitions
 
 def load_voice_memos():
     """Load and normalize voice memos from the voice directory."""
-    print("Loading voice memos...")
+    logger.info("Loading voice memos...")
     voice_files = sorted(
         f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a"]
     )
@@ -34,16 +38,16 @@ def load_voice_memos():
         voice_segs.append(v)
 
     if not voice_segs:
-        print("No voice memos found in static/local-sample-files!")
+        logger.error("No voice memos found in static/local-sample-files!")
         return None
 
-    print(f"Loaded {len(voice_segs)} voice memos")
+    logger.info(f"Loaded {len(voice_segs)} voice memos")
     return voice_segs
 
 
 def build_voice_track(voice_segs):
     """Build the voice track with gaps and track the gap ranges."""
-    print("Building voice track...")
+    logger.info("Building voice track...")
     show = AudioSegment.silent(INTRO_MS)  # add music intro at the start
     gap_ranges = [(0, INTRO_MS)]  # first gap: intro
 
@@ -65,28 +69,28 @@ def build_voice_track(voice_segs):
     gap_ranges.append((gap_start, gap_end))
     show += AudioSegment.silent(OUTRO_MS)
 
-    print(f"Built voice track with {len(gap_ranges)} gaps")
+    logger.info(f"Built voice track with {len(gap_ranges)} gaps")
     return show, gap_ranges
 
 
 def load_background_music(track_length):
     """Load and prepare background music to match the track length."""
-    print("Loading background music...")
+    logger.info("Loading background music...")
     music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
     random.shuffle(music_files)
     if not music_files:
-        print("No background music found in static/background-music!")
+        logger.error("No background music found in static/background-music!")
         return None
 
     bg = sum(AudioSegment.from_file(str(f)) for f in music_files)
     bg = bg[:track_length]  # trim to exact length
-    print("Background music loaded and trimmed to track length")
+    logger.info("Background music loaded and trimmed to track length")
     return bg
 
 
 def create_final_mix(voice_track, bg_music, gap_ranges):
     """Create the final mix by overlaying voice and background music."""
-    print("Creating final mix...")
+    logger.info("Creating final mix...")
 
     # Start with silent track of correct length
     final_music = AudioSegment.silent(len(voice_track))
@@ -109,24 +113,24 @@ def create_final_mix(voice_track, bg_music, gap_ranges):
     # Finally overlay the voice track
     final_music = final_music.overlay(voice_track)
 
-    print("Final mix created")
+    logger.info("Final mix created")
     return final_music
 
 
 def export_mix(final_mix):
     """Export the final mix to an MP3 file."""
-    print("Exporting final mix...")
+    logger.info("Exporting final mix...")
     # Make sure the output directory exists
     pathlib.Path("output").mkdir(exist_ok=True)
 
     with open("output/voice_memo_mix.mp3", "wb") as out_f:
         final_mix.export(out_f, format="mp3")
-    print("Voice memo mix exported successfully!")
+    logger.info("Voice memo mix exported successfully!")
 
 
 def produce_audio_mixed_track():
     """Main function to generate the voice memo overlay with background music."""
-    print("Starting voice memo overlay generation...")
+    logger.info("Starting voice memo overlay generation...")
 
     # Step 1: Load voice memos
     voice_segs = load_voice_memos()

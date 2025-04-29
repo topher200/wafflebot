@@ -1,6 +1,10 @@
 import os
 import discord
 from dotenv import load_dotenv
+from src.utils.logging import setup_logger
+
+# Set up logger
+logger = setup_logger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -40,7 +44,7 @@ async def remove_white_check_mark_if_repeat(message):
         reactions_to_remove = []
         for reaction in message.reactions:
             if reaction.emoji == COMPLETED_EMOJI:
-                print(f"Removing {reaction.emoji} from {message}")
+                logger.info(f"Removing {reaction.emoji} from {message}")
                 reactions_to_remove.append(reaction)
         for reaction in reactions_to_remove:
             message.reactions.remove(reaction)
@@ -58,26 +62,26 @@ async def has_white_check_mark(message):
 
 async def add_white_check_mark(message):
     await message.add_reaction(COMPLETED_EMOJI)
-    print(f"Adding {COMPLETED_EMOJI} to {message}")
+    logger.info(f"Adding {COMPLETED_EMOJI} to {message}")
 
 
 async def perform_download(message):
     if not message.attachments:
-        print("No attachments found")
+        logger.warning("No attachments found")
         return
     for attachment in message.attachments:
         if attachment.filename.endswith((".mp3", ".wav", ".m4a")):
             await attachment.save(f"static/local-sample-files/{attachment.filename}")
-            print(f"Downloaded {attachment.filename}")
+            logger.info(f"Downloaded {attachment.filename}")
 
 
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    logger.info(f"Logged in as {client.user}")
     channel = client.get_channel(CHANNEL_ID)
 
     if channel is None:
-        print("Channel not found!")
+        logger.error("Channel not found!")
         await client.close()
         return
 
@@ -90,9 +94,9 @@ async def on_ready():
     # files of any which do not have a :white_check_mark:
     async for message in channel.history(limit=MESSAGES_TO_PROCESS):
         if await has_white_check_mark(message):
-            print(f"Skipping message due to {COMPLETED_EMOJI} {message}")
+            logger.info(f"Skipping message due to {COMPLETED_EMOJI} {message}")
             continue
-        print(f"Message: {message}, attachments: {message.attachments}")
+        logger.info(f"Message: {message}, attachments: {message.attachments}")
 
         await perform_download(message)
         await add_white_check_mark(message)
