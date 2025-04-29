@@ -4,10 +4,8 @@ from pydub import AudioSegment
 from pydub.effects import normalize
 from src.utils.logging import setup_logger
 
-# Set up logger
 logger = setup_logger(__name__)
 
-# Constants for voice memo processing
 VOICE_DIR = pathlib.Path("static/local-sample-files")
 MUSIC_DIR = pathlib.Path("static/background-music")
 
@@ -39,12 +37,14 @@ def load_voice_memos():
         raw_segs.append(AudioSegment.from_file(str(f)))
 
     # Concatenate all segments to normalize them together
+    logger.info(f"Normalizing {len(raw_segs)} voice memos...")
     combined = sum(raw_segs)
     normalized_combined = normalize(combined)
 
     # Split back into individual segments
     voice_segs = []
     current_pos = 0
+    logger.info("Splitting normalized voice memos into individual segments...")
     for seg in raw_segs:
         # Get the normalized version of this segment
         normalized_seg = normalized_combined[current_pos : current_pos + len(seg)]
@@ -92,8 +92,8 @@ def build_voice_track(voice_segs):
     return show, gap_ranges
 
 
-def load_background_music(track_length):
-    """Load and prepare background music to match the track length."""
+def load_background_music():
+    """Load and prepare background music."""
     logger.info("Loading background music...")
     music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
     random.shuffle(music_files)
@@ -102,14 +102,22 @@ def load_background_music(track_length):
         return None
 
     bg = sum(AudioSegment.from_file(str(f)) for f in music_files)
-    bg = bg[:track_length]  # trim to exact length
-    logger.info("Background music loaded and trimmed to track length")
+    logger.info(
+        f"Loaded {len(music_files)} background tracks, total length: {len(bg)}ms"
+    )
     return bg
 
 
 def create_final_mix(voice_track, bg_music, gap_ranges):
     """Create the final mix by overlaying voice and background music."""
     logger.info("Creating final mix...")
+
+    # If background music is too short, loop it
+    while len(bg_music) < len(voice_track) + len(voice_track) * 0.1:
+        logger.info(
+            f"Background music too short ({len(bg_music)}ms vs {len(voice_track)}ms), looping..."
+        )
+        bg_music = bg_music + bg_music
 
     # Start with silent track of correct length
     final_music = AudioSegment.silent(len(voice_track))
@@ -163,7 +171,7 @@ def produce_audio_mixed_track():
     voice_track, gap_ranges = build_voice_track(voice_segs)
 
     # Step 3: Load background music
-    bg_music = load_background_music(len(voice_track))
+    bg_music = load_background_music()
     if not bg_music:
         return
 
