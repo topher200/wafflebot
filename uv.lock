@@ -255,12 +255,24 @@ wheels = [
 ]
 
 [[package]]
-name = "pydub"
-version = "0.25.1"
+name = "pydub-ng"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fe/9a/e6bca0eed82db26562c73b5076539a4a08d3cffd19c3cc5913a3e61145fd/pydub-0.25.1.tar.gz", hash = "sha256:980a33ce9949cab2a569606b65674d748ecbca4f0796887fd6f46173a7b0d30f", size = 38326, upload_time = "2021-03-10T02:09:54.659Z" }
+dependencies = [
+    { name = "audioop-lts" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/bd/4e/249f66909063c8136123c2ff6f56e98ca9b856ce189cd7c740c1d1ce16f4/pydub_ng-0.2.0.tar.gz", hash = "sha256:d5e82e59395afa5a36a329b3d19651143f8281afad9c0b13d8a2bb646c5a3f01", size = 51867, upload_time = "2025-03-13T07:12:31.735Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/53/d78dc063216e62fc55f6b2eebb447f6a4b0a59f55c8406376f76bf959b08/pydub-0.25.1-py2.py3-none-any.whl", hash = "sha256:65617e33033874b59d87db603aa1ed450633288aefead953b30bded59cb599a6", size = 32327, upload_time = "2021-03-10T02:09:53.503Z" },
+    { url = "https://files.pythonhosted.org/packages/81/49/5402be8f13fcbaacf3f387d2320b8a9c605d5ce5c1d66fce2fc1e9bb652e/pydub_ng-0.2.0-py3-none-any.whl", hash = "sha256:dc3bf2b13152fc94c1110d926b0223c65305a71e81bba3a7936772923833d0d3", size = 37232, upload_time = "2025-03-13T07:12:30.794Z" },
+]
+
+[[package]]
+name = "python-dotenv"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/2c/7bb1416c5620485aa793f2de31d3df393d3686aa8a8506d11e10e13c5baf/python_dotenv-1.1.0.tar.gz", hash = "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5", size = 39920, upload_time = "2025-03-25T10:14:56.835Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/18/98a99ad95133c6a6e2005fe89faedf294a748bd5dc803008059409ac9b1e/python_dotenv-1.1.0-py3-none-any.whl", hash = "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d", size = 20256, upload_time = "2025-03-25T10:14:55.034Z" },
 ]
 
 [[package]]
@@ -269,13 +281,15 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "discord-py" },
-    { name = "pydub" },
+    { name = "pydub-ng" },
+    { name = "python-dotenv" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "discord-py", specifier = ">=2.0.0" },
-    { name = "pydub", specifier = ">=0.25.1" },
+    { name = "discord-py", specifier = "~=2.5.2" },
+    { name = "pydub-ng", specifier = "~=0.2.0" },
+    { name = "python-dotenv", specifier = "~=1.1.0" },
 ]
 
 [[package]]
