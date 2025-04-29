@@ -1,74 +1,152 @@
-# Example from pydub-ng repo:
-
-# from glob import glob
-# from pydub import AudioSegment
-
-# playlist_songs = [AudioSegment.from_mp3(mp3_file) for mp3_file in glob("*.mp3")]
-
-# first_song = playlist_songs.pop(0)
-
-# # let's just include the first 30 seconds of the first song (slicing
-# # is done by milliseconds)
-# beginning_of_song = first_song[:30*1000]
-
-# playlist = beginning_of_song
-# for song in playlist_songs:
-
-#     # We don't want an abrupt stop at the end, so let's do a 10 second crossfades
-#     playlist = playlist.append(song, crossfade=(10 * 1000))
-
-# # let's fade out the end of the last song
-# playlist = playlist.fade_out(30)
-
-# # hmm I wonder how long it is... ( len(audio_segment) returns milliseconds )
-# playlist_length = len(playlist) / (1000*60)
-
-# # lets save it!
-# with open("%s_minute_playlist.mp3" % playlist_length, 'wb') as out_f:
-#     playlist.export(out_f, format='mp3')
-
 import pathlib
+import random
 from pydub import AudioSegment
+from pydub.effects import normalize
+
+# Constants for voice memo processing
+VOICE_DIR = pathlib.Path("static/local-sample-files")
+MUSIC_DIR = pathlib.Path("static/background-music")
+
+INTRO_MS = 3000  # music intro length (3 sec)
+OUTRO_MS = 5000  # music outro length (5 sec)
+CROSSFADE_MS = 500  # crossfade between memos
+GAP_MS = 3000  # music-only between memos
+VOICE_FADE_MS = 200  # fade-in/out on memos
+MUSIC_UNDER_VOICE_DB = -20  # dB lowering under speech
+MUSIC_WITHOUT_VOICE_DB = -10  # little lower music when there is no voice
+GAP_FADE_MS = 2000  # fade in/out for gap transitions
 
 
-def find_audio_files():
-    audio_path = pathlib.Path("static/local-sample-files")
-    # Return a list of all audio files in the directory
-    return list(audio_path.glob("*.mp3")) + list(audio_path.glob("*.m4a"))
+def load_voice_memos():
+    """Load and normalize voice memos from the voice directory."""
+    print("Loading voice memos...")
+    voice_files = sorted(
+        f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a"]
+    )
+    voice_segs = []
+
+    for f in voice_files:
+        v = (
+            normalize(AudioSegment.from_file(str(f)))
+            .fade_in(VOICE_FADE_MS)
+            .fade_out(VOICE_FADE_MS)
+        )
+        voice_segs.append(v)
+
+    if not voice_segs:
+        print("No voice memos found in static/local-sample-files!")
+        return None
+
+    print(f"Loaded {len(voice_segs)} voice memos")
+    return voice_segs
 
 
-def generate_audio_file():
-    print("Generating audio file...")
-    audio_files = find_audio_files()
-    print(f"Found {len(audio_files)} audio files")
+def build_voice_track(voice_segs):
+    """Build the voice track with gaps and track the gap ranges."""
+    print("Building voice track...")
+    show = AudioSegment.silent(INTRO_MS)  # add music intro at the start
+    gap_ranges = [(0, INTRO_MS)]  # first gap: intro
 
-    if not audio_files:
-        print("No audio files found in static/local-sample-files!")
-        return
+    cursor = INTRO_MS
 
-    files = [AudioSegment.from_file(str(file)) for file in audio_files]
-    print(f"Found {len(files)} files")
-    first_file = files.pop(0)
-    print(f"First file: {first_file}")
-    beginning_of_song = first_file[: 30 * 1000]
-    print(f"Beginning of song: {beginning_of_song}")
-    playlist = beginning_of_song
-    for song in files:
-        print(f"Song: {song}")
-        # Calculate crossfade duration as 10% of the song length, but no more than 10 seconds
-        crossfade_duration = min(len(song) * 0.1, 10 * 1000)
-        playlist = playlist.append(song, crossfade=int(crossfade_duration))
-    print(f"Playlist: {playlist}")
-    playlist = playlist.fade_out(30)
-    print(f"Playlist after fade out: {playlist}")
+    for idx, seg in enumerate(voice_segs):
+        if idx:
+            gap_start = cursor
+            gap_end = cursor + GAP_MS
+            gap_ranges.append((gap_start, gap_end))
+            show += AudioSegment.silent(GAP_MS)
+            cursor += GAP_MS
+        show = show.append(seg, crossfade=CROSSFADE_MS)
+        cursor += len(seg)
 
+    # After last voice memo, add outro
+    gap_start = cursor
+    gap_end = cursor + OUTRO_MS
+    gap_ranges.append((gap_start, gap_end))
+    show += AudioSegment.silent(OUTRO_MS)
+
+    print(f"Built voice track with {len(gap_ranges)} gaps")
+    return show, gap_ranges
+
+
+def load_background_music(track_length):
+    """Load and prepare background music to match the track length."""
+    print("Loading background music...")
+    music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
+    random.shuffle(music_files)
+    if not music_files:
+        print("No background music found in static/background-music!")
+        return None
+
+    bg = sum(AudioSegment.from_file(str(f)) for f in music_files)
+    bg = bg[:track_length]  # trim to exact length
+    print("Background music loaded and trimmed to track length")
+    return bg
+
+
+def create_final_mix(voice_track, bg_music, gap_ranges):
+    """Create the final mix by overlaying voice and background music."""
+    print("Creating final mix...")
+
+    # Start with silent track of correct length
+    final_music = AudioSegment.silent(len(voice_track))
+
+    # Add full-volume background music only in the gaps
+    for start, end in gap_ranges:
+        full_vol_slice = (
+            bg_music[start:end]
+            .apply_gain(MUSIC_WITHOUT_VOICE_DB)
+            .fade_in(GAP_FADE_MS)
+            .fade_out(GAP_FADE_MS)
+        )
+        final_music = final_music.overlay(full_vol_slice, position=start)
+
+    # Add lowered background music everywhere else
+    lowered_bg = bg_music + MUSIC_UNDER_VOICE_DB
+    # Overlay the lowered background music where there isn't full volume music
+    final_music = final_music.overlay(lowered_bg)
+
+    # Finally overlay the voice track
+    final_music = final_music.overlay(voice_track)
+
+    print("Final mix created")
+    return final_music
+
+
+def export_mix(final_mix):
+    """Export the final mix to an MP3 file."""
+    print("Exporting final mix...")
     # Make sure the output directory exists
     pathlib.Path("output").mkdir(exist_ok=True)
 
-    with open("output/test.mp3", "wb") as out_f:
-        playlist.export(out_f, format="mp3")
-    print("Audio file generated successfully!")
+    with open("output/voice_memo_mix.mp3", "wb") as out_f:
+        final_mix.export(out_f, format="mp3")
+    print("Voice memo mix exported successfully!")
+
+
+def produce_audio_mixed_track():
+    """Main function to generate the voice memo overlay with background music."""
+    print("Starting voice memo overlay generation...")
+
+    # Step 1: Load voice memos
+    voice_segs = load_voice_memos()
+    if not voice_segs:
+        return
+
+    # Step 2: Build voice track
+    voice_track, gap_ranges = build_voice_track(voice_segs)
+
+    # Step 3: Load background music
+    bg_music = load_background_music(len(voice_track))
+    if not bg_music:
+        return
+
+    # Step 4: Create final mix
+    final_mix = create_final_mix(voice_track, bg_music, gap_ranges)
+
+    # Step 5: Export the mix
+    export_mix(final_mix)
 
 
 if __name__ == "__main__":
-    generate_audio_file()
+    produce_audio_mixed_track()
