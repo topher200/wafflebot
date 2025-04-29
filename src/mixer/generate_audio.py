@@ -124,13 +124,15 @@ def create_final_mix(voice_track, bg_music, gap_ranges):
 
     # Add full-volume background music only in the gaps
     for start, end in gap_ranges:
+        fade_start = max(0, start - GAP_FADE_MS)
+        fade_end = min(len(voice_track), end + GAP_FADE_MS)
         full_vol_slice = (
-            bg_music[start:end]
+            bg_music[fade_start:fade_end]
             .apply_gain(MUSIC_WITHOUT_VOICE_DB)
             .fade_in(GAP_FADE_MS)
             .fade_out(GAP_FADE_MS)
         )
-        final_music = final_music.overlay(full_vol_slice, position=start)
+        final_music = final_music.overlay(full_vol_slice, position=fade_start)
 
     # Add lowered background music everywhere else
     lowered_bg = bg_music + MUSIC_UNDER_VOICE_DB
