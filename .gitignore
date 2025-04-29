@@ -11,3 +11,4 @@ dist/
 build/
 static
 output/
+logs/
