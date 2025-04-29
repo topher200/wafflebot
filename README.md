@@ -23,7 +23,7 @@ prepares it for podcast hosting.
    - **Generate audio file:**
 
      ```bash
-     docker run -it --rm wafflebot python src/mixer/main.py
+     docker run -it --rm wafflebot python src/mixer/generate_audio.py
      ```
 
    - **Upload podcast:**
@@ -31,3 +31,9 @@ prepares it for podcast hosting.
      ```bash
      docker run -it --rm wafflebot python src/podcast_uploader/main.py
      ```
+
+3. **Run tests:**
+
+   ```bash
+   uv run pytest -v
+   ```
