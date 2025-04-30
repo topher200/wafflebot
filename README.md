@@ -50,7 +50,8 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 - **Run manually:**
 
   ```bash
-  systemctl start homelab-run-wafflebot
+  docker compose run --build --rm file-downloader
+  docker compose run --build --rm audio-mixer
   ```
 
   or
