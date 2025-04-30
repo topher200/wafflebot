@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-import discord
 from .download import (
-    remove_white_check_mark_if_repeat,
     has_white_check_mark,
     add_white_check_mark,
     perform_download,
+    has_repeat_emoji,
+    process_messages,
     COMPLETED_EMOJI,
     REPEAT_EMOJI,
 )
@@ -65,13 +65,76 @@ async def test_perform_download_with_audio_file(mock_message):
 
 
 @pytest.mark.asyncio
-async def test_remove_white_check_mark_if_repeat(mock_message, mock_reaction):
-    # Setup reactions
+async def test_has_repeat_emoji(mock_message, mock_reaction):
+    # Test without repeat emoji
+    assert await has_repeat_emoji(mock_message) is False
+
+    # Test with repeat emoji
+    mock_reaction.emoji = REPEAT_EMOJI
+    mock_message.reactions = [mock_reaction]
+    assert await has_repeat_emoji(mock_message) is True
+
+
+class AsyncIterList:
+    def __init__(self, items):
+        self.items = items
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if not self.items:
+            raise StopAsyncIteration
+        return self.items.pop(0)
+
+
+@pytest.mark.asyncio
+async def test_process_messages_with_checkmark():
+    # Create a mock message with checkmark
+    mock_message = AsyncMock()
     check_reaction = Mock()
     check_reaction.emoji = COMPLETED_EMOJI
+    check_reaction.me = True
+    mock_message.reactions = [check_reaction]
+
+    # Create a mock attachment
+    mock_attachment = AsyncMock()
+    mock_attachment.filename = "test.mp3"
+    mock_message.attachments = [mock_attachment]
+
+    # Create mock channel that returns our message
+    mock_channel = AsyncMock()
+    mock_channel.history.return_value = AsyncIterList([mock_message])
+
+    # Call process_messages
+    await process_messages(mock_channel)
+
+    # Verify that save was NOT called since message had checkmark
+    mock_attachment.save.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_process_messages_with_checkmark_and_repeat():
+    # Create a mock message with both checkmark and repeat emoji
+    mock_message = AsyncMock()
+    check_reaction = Mock()
+    check_reaction.emoji = COMPLETED_EMOJI
+    check_reaction.me = True
     repeat_reaction = Mock()
     repeat_reaction.emoji = REPEAT_EMOJI
     mock_message.reactions = [check_reaction, repeat_reaction]
 
-    await remove_white_check_mark_if_repeat(mock_message)
-    assert check_reaction not in mock_message.reactions
+    # Create a mock attachment
+    mock_attachment = AsyncMock()
+    mock_attachment.filename = "test.mp3"
+    mock_message.attachments = [mock_attachment]
+
+    # Create mock channel that returns our message
+    mock_channel = AsyncMock()
+    mock_channel.history.return_value = AsyncIterList([mock_message])
+
+    # Call process_messages
+    await process_messages(mock_channel)
+
+    # Verify that save WAS called since message had repeat emoji
+    mock_attachment.save.assert_called_once_with("data/voice-memos/test.mp3")
