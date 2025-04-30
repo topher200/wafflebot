@@ -16,10 +16,11 @@ INPUT_FILE="data/podcast/voice_memo_mix.mp3"
 OUTPUT_DIR="/home/topher/Dropbox/Apps/PushPod/Haotic Waffles"
 
 # find the latest file in the output directory
+mkdir -p "$OUTPUT_DIR"
 LATEST_FILE=$(ls -t "$OUTPUT_DIR"/*.mp3 | head -n 1)
 
-# get its prefix (e.g. "1-April 30, 2025")
-PREFIX=$(basename "$LATEST_FILE" .mp3 | cut -d '-' -f 1)
+# get its prefix (e.g. "1-April 30, 2025"), default to "1" if no files found
+PREFIX=$(if [ -n "$LATEST_FILE" ]; then basename "$LATEST_FILE" .mp3 | cut -d '-' -f 1; else echo "1"; fi)
 
 # rename our file to include that prefix, +1, plus today's date (e.g. "2-April 30, 2025")
 NEW_FILE="$PREFIX-$(date +"%B %d, %Y").mp3"
