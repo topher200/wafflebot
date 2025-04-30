@@ -312,6 +312,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pydub-stubs"
+version = "0.25.1.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5c/28/2ae85a1671861ee88235c3bd50f495a80562003f22ab4223af6c8dfcbfc2/pydub_stubs-0.25.1.6.tar.gz", hash = "sha256:38e9a1e490b11e9fdd3c5a0b01667e2d959c817aadb56555b124c6c8be028ff5", size = 8602, upload_time = "2025-04-11T07:32:07.718Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/52/9e/c286937e56d47c97ce2221456b7779abf6449fd41d78a8fb9d2b13065b8c/pydub_stubs-0.25.1.6-py3-none-any.whl", hash = "sha256:235be0707485c48fe3d6537c751171bfeca21480c914e7e7bc9db2d6ed65f8ae", size = 9457, upload_time = "2025-04-11T07:32:06.287Z" },
+]
+
+[[package]]
 name = "pyright"
 version = "1.1.400"
 source = { registry = "https://pypi.org/simple" }
@@ -406,6 +418,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "pydub-stubs" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -421,6 +434,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "pydub-stubs", specifier = "~=0.25.1.6" },
     { name = "pyright", specifier = ">=1.1.350" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-asyncio", specifier = ">=0.26.0" },

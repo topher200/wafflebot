@@ -13,7 +13,17 @@ load_dotenv()
 
 # Retrieve the token and channel ID from environment variables
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
+CHANNEL_ID_STR = os.getenv("CHANNEL_ID")
+
+if TOKEN is None:
+    raise ValueError("DISCORD_TOKEN environment variable is not set")
+if CHANNEL_ID_STR is None:
+    raise ValueError("CHANNEL_ID environment variable is not set")
+
+try:
+    CHANNEL_ID = int(CHANNEL_ID_STR)
+except ValueError as e:
+    raise ValueError(f"CHANNEL_ID must be an integer, got: {CHANNEL_ID_STR}") from e
 
 # Set up the client with the necessary intents
 intents = discord.Intents.default()

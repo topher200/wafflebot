@@ -1,9 +1,10 @@
 import datetime
 import pathlib
 import random
+from typing import List, Tuple
 
-from pydub import AudioSegment
-from pydub.effects import normalize
+from pydub import AudioSegment  # type: ignore[import]
+from pydub.effects import normalize  # type: ignore[import]
 
 from src.utils.logging import setup_logger
 
@@ -20,7 +21,7 @@ VOICE_FADE_MS = 200  # fade-in/out on memos
 MUSIC_UNDER_VOICE_DB = -20  # dB lowering under speech
 MUSIC_WITHOUT_VOICE_DB = -10  # little lower music when there is no voice
 GAP_FADE_MS = 2000  # fade in/out for gap transitions
-MAX_LENGTH_MS = datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000
+MAX_LENGTH_MS = int(datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000)
 
 
 class NoVoiceMemosFoundError(Exception):
@@ -31,7 +32,7 @@ class NoBackgroundMusicFoundError(Exception):
     """Exception raised when no background music is found."""
 
 
-def load_voice_memos():
+def load_voice_memos() -> List[AudioSegment]:
     """Load and normalize voice memos from the voice directory."""
     logger.info("Loading voice memos...")
     voice_files = sorted(
@@ -42,7 +43,7 @@ def load_voice_memos():
         raise NoVoiceMemosFoundError(f"No voice memos found in {VOICE_DIR}")
 
     # First load all files
-    raw_segs = []
+    raw_segs: List[AudioSegment] = []
     for f in voice_files:
         logger.info(f"Loading {f.name}")
         segment = AudioSegment.from_file(str(f))
@@ -53,7 +54,9 @@ def load_voice_memos():
 
     # Concatenate all segments to normalize them together
     logger.info(f"Normalizing {len(raw_segs)} voice memos...")
-    combined = sum(raw_segs)
+    combined = raw_segs[0]
+    for seg in raw_segs[1:]:
+        combined += seg
     normalized_combined = normalize(combined)
 
     # Split back into individual segments
@@ -79,7 +82,9 @@ def load_voice_memos():
     return voice_segs
 
 
-def build_voice_track(voice_segs):
+def build_voice_track(
+    voice_segs: List[AudioSegment],
+) -> Tuple[AudioSegment, List[Tuple[int, int]]]:
     """Build the voice track with gaps and track the gap ranges."""
     logger.info("Building voice track...")
     show = AudioSegment.silent(INTRO_MS)  # add music intro at the start
@@ -107,7 +112,7 @@ def build_voice_track(voice_segs):
     return show, gap_ranges
 
 
-def load_background_music():
+def load_background_music() -> AudioSegment:
     """Load and prepare background music."""
     logger.info("Loading background music...")
     music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
@@ -116,14 +121,18 @@ def load_background_music():
         logger.error(f"No background music found in {MUSIC_DIR}")
         raise NoBackgroundMusicFoundError(f"No background music found in {MUSIC_DIR}")
 
-    bg = sum(AudioSegment.from_file(str(f)) for f in music_files)
+    bg = AudioSegment.empty()
+    for f in music_files:
+        bg += AudioSegment.from_file(str(f))
     logger.info(
         f"Loaded {len(music_files)} background tracks, total length: {len(bg)}ms"
     )
     return bg
 
 
-def create_final_mix(voice_track, bg_music, gap_ranges):
+def create_final_mix(
+    voice_track: AudioSegment, bg_music: AudioSegment, gap_ranges: List[Tuple[int, int]]
+) -> AudioSegment:
     """Create the final mix by overlaying voice and background music."""
     logger.info("Creating final mix...")
 
@@ -165,7 +174,7 @@ def create_final_mix(voice_track, bg_music, gap_ranges):
     return final_music
 
 
-def export_mix(final_mix):
+def export_mix(final_mix: AudioSegment) -> None:
     """Export the final mix to an MP3 file."""
     logger.info("Exporting final mix...")
     # Make sure the output directory exists
@@ -176,7 +185,7 @@ def export_mix(final_mix):
     logger.info("Voice memo mix exported successfully!")
 
 
-def produce_audio_mixed_track():
+def produce_audio_mixed_track() -> None:
     """Main function to generate the voice memo overlay with background music."""
     logger.info("Starting voice memo overlay generation...")
 
