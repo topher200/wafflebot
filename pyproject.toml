@@ -17,11 +17,21 @@ dev = [
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
     "ruff>=0.11.7",
+    "pyright>=1.1.350",
 ]
 
 [tool.ruff]
 select = ["E", "F", "I", "B", "W", "C90"]
 target-version = "py313"
+
+[tool.pyright]
+include = ["src"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/file_downloader"]
