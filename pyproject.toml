@@ -22,8 +22,10 @@ dev = [
 ]
 
 [tool.ruff]
-select = ["E", "F", "I", "B", "W", "C90"]
 target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "W", "C90"]
 
 [tool.pyright]
 include = ["src"]
