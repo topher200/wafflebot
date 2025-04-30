@@ -99,7 +99,7 @@ async def perform_download(message):
         logger.warning("No attachments found")
         return
     for attachment in message.attachments:
-        if attachment.filename.endswith((".mp3", ".wav", ".m4a")):
+        if attachment.filename.endswith((".mp3", ".wav", ".m4a", ".ogg")):
             # prefix with a sortable timestamp with milliseconds precision
             current_time = datetime.datetime.now(tz=datetime.UTC).strftime(
                 "%Y-%m-%d_%H-%M-%S_%f"
@@ -107,6 +107,10 @@ async def perform_download(message):
             save_path = VOICE_MEMOS_DIR / f"{current_time}-{attachment.filename}"
             await attachment.save(str(save_path))
             logger.info(f"Downloaded {attachment.filename}")
+        else:
+            logger.warning(
+                f"Skipping {attachment.filename} because it's not an audio file"
+            )
 
 
 async def process_messages(channel):

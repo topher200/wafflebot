@@ -37,7 +37,7 @@ def load_voice_memos() -> List[AudioSegment]:
     """Load and normalize voice memos from the voice directory."""
     logger.info("Loading voice memos...")
     voice_files = sorted(
-        f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a"]
+        f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a", ".ogg"]
     )
     if not voice_files:
         logger.error(f"No voice memos found in {VOICE_DIR}")
@@ -116,7 +116,9 @@ def build_voice_track(
 def load_background_music() -> AudioSegment:
     """Load and prepare background music."""
     logger.info("Loading background music...")
-    music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
+    music_files = [
+        f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".ogg", ".m4a"]
+    ]
     random.shuffle(music_files)
     if not music_files:
         logger.error(f"No background music found in {MUSIC_DIR}")
