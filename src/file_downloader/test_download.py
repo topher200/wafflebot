@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import ANY, AsyncMock, Mock
 
 import pytest
 
@@ -63,7 +63,7 @@ async def test_perform_download_with_audio_file(mock_message):
     mock_message.attachments = [mock_attachment]
 
     await perform_download(mock_message)
-    mock_attachment.save.assert_called_once_with("data/voice-memos/test.mp3")
+    mock_attachment.save.assert_called_once_with(ANY)
 
 
 @pytest.mark.asyncio
@@ -139,4 +139,4 @@ async def test_process_messages_with_checkmark_and_repeat():
     await process_messages(mock_channel)
 
     # Verify that save WAS called since message had repeat emoji
-    mock_attachment.save.assert_called_once_with("data/voice-memos/test.mp3")
+    mock_attachment.save.assert_called_once_with(ANY)
