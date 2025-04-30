@@ -1,3 +1,4 @@
+import datetime
 import os
 from pathlib import Path
 
@@ -99,7 +100,11 @@ async def perform_download(message):
         return
     for attachment in message.attachments:
         if attachment.filename.endswith((".mp3", ".wav", ".m4a")):
-            save_path = VOICE_MEMOS_DIR / attachment.filename
+            # prefix with a sortable timestamp with milliseconds precision
+            current_time = datetime.datetime.now(tz=datetime.UTC).strftime(
+                "%Y-%m-%d_%H-%M-%S_%f"
+            )
+            save_path = VOICE_MEMOS_DIR / f"{current_time}-{attachment.filename}"
             await attachment.save(str(save_path))
             logger.info(f"Downloaded {attachment.filename}")
 
