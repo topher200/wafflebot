@@ -1,17 +1,19 @@
 import os
+from pathlib import Path
 
 import discord
 from dotenv import load_dotenv
 
 from src.utils.logging import setup_logger
 
-# Set up logger
 logger = setup_logger(__name__)
+
+VOICE_MEMOS_DIR = Path("data/voice-memos")
+VOICE_MEMOS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Retrieve the token and channel ID from environment variables
 TOKEN = os.getenv("DISCORD_TOKEN")
 CHANNEL_ID_STR = os.getenv("CHANNEL_ID")
 
@@ -97,7 +99,8 @@ async def perform_download(message):
         return
     for attachment in message.attachments:
         if attachment.filename.endswith((".mp3", ".wav", ".m4a")):
-            await attachment.save(f"data/voice-memos/{attachment.filename}")
+            save_path = VOICE_MEMOS_DIR / attachment.filename
+            await attachment.save(str(save_path))
             logger.info(f"Downloaded {attachment.filename}")
 
 
