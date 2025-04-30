@@ -48,34 +48,22 @@ class EnhancedMessage:
         return self.__str__()
 
 
-# Here's the structure of a message.reactions:
-# [<Reaction emoji='✅' me=False count=1>, <Reaction emoji='🔁' me=False count=1>]
-
-
-async def remove_white_check_mark_if_repeat(message):
-    """
-    Removes the bot's white check mark from the message if the message has a repeat emoji
-    """
-    remove_check_mark = False
-    for reaction in message.reactions:
-        if reaction.emoji == REPEAT_EMOJI:
-            remove_check_mark = True
-    if remove_check_mark:
-        reactions_to_remove = []
-        for reaction in message.reactions:
-            if reaction.emoji == COMPLETED_EMOJI:
-                logger.info(f"Removing {reaction.emoji} from {message}")
-                reactions_to_remove.append(reaction)
-        for reaction in reactions_to_remove:
-            message.reactions.remove(reaction)
-
-
 async def has_white_check_mark(message):
     """
     Returns True if the message has a white check mark reaction from the bot
     """
     for reaction in message.reactions:
         if reaction.emoji == COMPLETED_EMOJI and reaction.me:
+            return True
+    return False
+
+
+async def has_repeat_emoji(message):
+    """
+    Returns True if the message has a repeat emoji
+    """
+    for reaction in message.reactions:
+        if reaction.emoji == REPEAT_EMOJI:
             return True
     return False
 
@@ -106,23 +94,26 @@ async def on_ready():
         await client.close()
         return
 
-    # Iterate through the latest messages in the channel and remove the
-    # :white_check_mark: from any which have a :repeat: emoji
-    async for message in channel.history(limit=MESSAGES_TO_PROCESS):
-        message = EnhancedMessage(message)
-        await remove_white_check_mark_if_repeat(message)
-
     # Iterate through the latest messages in the channel and download the audio
-    # files of any which do not have a :white_check_mark:
+    # files if they either:
+    # 1. Don't have a checkmark, or
+    # 2. Have a repeat emoji (regardless of checkmark)
     async for message in channel.history(limit=MESSAGES_TO_PROCESS):
         message = EnhancedMessage(message)
-        if await has_white_check_mark(message):
-            logger.info(f"Skipping message due to {COMPLETED_EMOJI} {message}")
-            continue
-        logger.info(f"Processing {message}")
+        should_process = False
 
-        await perform_download(message)
-        await add_white_check_mark(message)
+        if not await has_white_check_mark(message):
+            should_process = True
+            logger.info(f"Processing new message {message}")
+        elif await has_repeat_emoji(message):
+            should_process = True
+            logger.info(f"Reprocessing message with repeat emoji {message}")
+
+        if should_process:
+            await perform_download(message)
+            await add_white_check_mark(message)
+        else:
+            logger.info(f"Skipping message {message}")
 
     await client.close()
 
