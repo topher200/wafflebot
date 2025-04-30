@@ -4,6 +4,10 @@ WaffleBot is a Discord bot that collects voice memos from a channel, combines
 them into a single audio file with intro, outro, and interlude music, and
 uploads the result to Dropbox/PushPod.
 
+## Overview
+
+![WaffleBot Architecture](static/wafflebot.excalidraw.png)
+
 ## Development
 
 1. **Run tests:**
