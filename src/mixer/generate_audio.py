@@ -12,6 +12,7 @@ logger = setup_logger(__name__)
 
 VOICE_DIR = pathlib.Path("data/voice-memos")
 MUSIC_DIR = pathlib.Path("static/background-music")
+PODCAST_OUTPUT_DIR = pathlib.Path("data/podcast")
 
 INTRO_MS = 5000  # music intro length
 OUTRO_MS = 8000  # music outro length
@@ -177,10 +178,8 @@ def create_final_mix(
 def export_mix(final_mix: AudioSegment) -> None:
     """Export the final mix to an MP3 file."""
     logger.info("Exporting final mix...")
-    # Make sure the output directory exists
-    pathlib.Path("output").mkdir(exist_ok=True)
-
-    with open("output/voice_memo_mix.mp3", "wb") as out_f:
+    PODCAST_OUTPUT_DIR.mkdir(exist_ok=True)
+    with open(PODCAST_OUTPUT_DIR / "voice_memo_mix.mp3", "wb") as out_f:
         final_mix.export(out_f, format="mp3")
     logger.info("Voice memo mix exported successfully!")
 
