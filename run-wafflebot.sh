@@ -8,6 +8,11 @@ docker compose build
 echo "Running file downloader..."
 docker compose run --rm file-downloader
 
+if [ ! -d "data/voice-memos" ]; then
+    echo "No voice memos were downloaded. Exiting."
+    exit 0
+fi
+
 echo "Running audio mixer..."
 docker compose run --rm audio-mixer
 

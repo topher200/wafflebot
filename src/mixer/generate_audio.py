@@ -21,6 +21,14 @@ GAP_FADE_MS = 2000  # fade in/out for gap transitions
 MAX_LENGTH_MS = datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000
 
 
+class NoVoiceMemosFoundError(Exception):
+    """Exception raised when no voice memos are found."""
+
+
+class NoBackgroundMusicFoundError(Exception):
+    """Exception raised when no background music is found."""
+
+
 def load_voice_memos():
     """Load and normalize voice memos from the voice directory."""
     logger.info("Loading voice memos...")
@@ -29,7 +37,7 @@ def load_voice_memos():
     )
     if not voice_files:
         logger.error(f"No voice memos found in {VOICE_DIR}")
-        return None
+        raise NoVoiceMemosFoundError(f"No voice memos found in {VOICE_DIR}")
 
     # First load all files
     raw_segs = []
@@ -104,7 +112,7 @@ def load_background_music():
     random.shuffle(music_files)
     if not music_files:
         logger.error(f"No background music found in {MUSIC_DIR}")
-        return None
+        raise NoBackgroundMusicFoundError(f"No background music found in {MUSIC_DIR}")
 
     bg = sum(AudioSegment.from_file(str(f)) for f in music_files)
     logger.info(
@@ -171,16 +179,12 @@ def produce_audio_mixed_track():
 
     # Step 1: Load voice memos
     voice_segs = load_voice_memos()
-    if not voice_segs:
-        return
 
     # Step 2: Build voice track
     voice_track, gap_ranges = build_voice_track(voice_segs)
 
     # Step 3: Load background music
-    bg_music = load_background_music()
-    if not bg_music:
-        return
+    bg_music = load_background_music(len(voice_track))
 
     # Step 4: Create final mix
     final_mix = create_final_mix(voice_track, bg_music, gap_ranges)
