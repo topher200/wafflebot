@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 import random
 from pydub import AudioSegment
@@ -17,6 +18,7 @@ VOICE_FADE_MS = 200  # fade-in/out on memos
 MUSIC_UNDER_VOICE_DB = -20  # dB lowering under speech
 MUSIC_WITHOUT_VOICE_DB = -10  # little lower music when there is no voice
 GAP_FADE_MS = 2000  # fade in/out for gap transitions
+MAX_LENGTH_MS = datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000
 
 
 def load_voice_memos():
@@ -34,7 +36,11 @@ def load_voice_memos():
     raw_segs = []
     for f in voice_files:
         logger.info(f"Loading {f.name}")
-        raw_segs.append(AudioSegment.from_file(str(f)))
+        segment = AudioSegment.from_file(str(f))
+        if len(segment) > MAX_LENGTH_MS:
+            logger.info(f"Voice memo {f.name} exceeds 3m 10s limit, truncating...")
+            segment = segment[:MAX_LENGTH_MS]
+        raw_segs.append(segment)
 
     # Concatenate all segments to normalize them together
     logger.info(f"Normalizing {len(raw_segs)} voice memos...")
