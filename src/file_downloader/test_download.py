@@ -106,7 +106,7 @@ async def test_process_messages_with_checkmark():
 
     # Create mock channel that returns our message
     mock_channel = AsyncMock()
-    mock_channel.history = AsyncMock(return_value=AsyncIterList([mock_message]))
+    mock_channel.history = lambda limit: AsyncIterList([mock_message])
 
     # Call process_messages
     await process_messages(mock_channel)
@@ -133,7 +133,7 @@ async def test_process_messages_with_checkmark_and_repeat():
 
     # Create mock channel that returns our message
     mock_channel = AsyncMock()
-    mock_channel.history = AsyncMock(return_value=AsyncIterList([mock_message]))
+    mock_channel.history = lambda limit: AsyncIterList([mock_message])
 
     # Call process_messages
     await process_messages(mock_channel)
