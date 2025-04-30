@@ -18,6 +18,7 @@ dev = [
     "pytest-asyncio>=0.26.0",
     "ruff>=0.11.7",
     "pyright>=1.1.350",
+    "pydub-stubs~=0.25.1.6"
 ]
 
 [tool.ruff]
