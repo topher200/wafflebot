@@ -1,6 +1,8 @@
 import os
+
 import discord
 from dotenv import load_dotenv
+
 from src.utils.logging import setup_logger
 
 # Set up logger
@@ -31,7 +33,8 @@ REPEAT_EMOJI = "🔁"
 
 class EnhancedMessage:
     """
-    A wrapper class for discord.Message that provides a more readable string representation.
+    A wrapper class for discord.Message that provides a more readable string
+    representation.
     """
 
     def __init__(self, message):
@@ -42,7 +45,11 @@ class EnhancedMessage:
 
     def __str__(self):
         attachments_str = ", ".join(a.filename for a in self._message.attachments)
-        return f"Message(id={self._message.id}, author={self._message.author.name}, attachments=[{attachments_str}])"
+        return (
+            f"Message(id={self._message.id}, "
+            f"author={self._message.author.name}, "
+            f"attachments=[{attachments_str}])"
+        )
 
     def __repr__(self):
         return self.__str__()
