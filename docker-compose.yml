@@ -1,0 +1,16 @@
+services:
+  file-downloader:
+    build: .
+    volumes:
+      - ./.env:/app/.env:ro
+      - ./data/voice-memos:/app/data/voice-memos
+    command: python src/file_downloader/download.py
+
+  audio-mixer:
+    build: .
+    volumes:
+      - ./.env:/app/.env:ro
+      - ~/Dropbox/wafflebot/background-music:/app/static/background-music:ro
+      - ./data/podcast:/app/data/podcast
+      - ./data/voice-memos:/app/data/voice-memos:ro
+    command: python src/mixer/generate_audio.py

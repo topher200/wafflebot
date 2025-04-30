@@ -7,7 +7,7 @@ from src.utils.logging import setup_logger
 
 logger = setup_logger(__name__)
 
-VOICE_DIR = pathlib.Path("static/local-sample-files")
+VOICE_DIR = pathlib.Path("data/voice-memos")
 MUSIC_DIR = pathlib.Path("static/background-music")
 
 INTRO_MS = 5000  # music intro length
@@ -27,9 +27,8 @@ def load_voice_memos():
     voice_files = sorted(
         f for f in VOICE_DIR.iterdir() if f.suffix in [".mp3", ".wav", ".m4a"]
     )
-
     if not voice_files:
-        logger.error("No voice memos found in static/local-sample-files!")
+        logger.error(f"No voice memos found in {VOICE_DIR}")
         return None
 
     # First load all files
@@ -104,7 +103,7 @@ def load_background_music():
     music_files = [f for f in MUSIC_DIR.iterdir() if f.suffix in [".mp3", ".wav"]]
     random.shuffle(music_files)
     if not music_files:
-        logger.error("No background music found in static/background-music!")
+        logger.error(f"No background music found in {MUSIC_DIR}")
         return None
 
     bg = sum(AudioSegment.from_file(str(f)) for f in music_files)

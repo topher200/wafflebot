@@ -61,7 +61,7 @@ async def test_perform_download_with_audio_file(mock_message):
     mock_message.attachments = [mock_attachment]
 
     await perform_download(mock_message)
-    mock_attachment.save.assert_called_once_with("static/local-sample-files/test.mp3")
+    mock_attachment.save.assert_called_once_with("data/voice-memos/test.mp3")
 
 
 @pytest.mark.asyncio

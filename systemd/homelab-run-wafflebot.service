@@ -1,0 +1,12 @@
+[Unit]
+Description=WaffleBot Podcast Generator
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/topher/dev/wafflebot
+ExecStart=/home/topher/dev/wafflebot/run-wafflebot.sh
+User=topher
+
+[Install]
+WantedBy=multi-user.target 
