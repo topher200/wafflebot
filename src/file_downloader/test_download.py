@@ -1,13 +1,15 @@
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
+
 from .download import (
-    has_white_check_mark,
-    add_white_check_mark,
-    perform_download,
-    has_repeat_emoji,
-    process_messages,
     COMPLETED_EMOJI,
     REPEAT_EMOJI,
+    add_white_check_mark,
+    has_repeat_emoji,
+    has_white_check_mark,
+    perform_download,
+    process_messages,
 )
 
 

@@ -1,8 +1,10 @@
 import datetime
 import pathlib
 import random
+
 from pydub import AudioSegment
 from pydub.effects import normalize
+
 from src.utils.logging import setup_logger
 
 logger = setup_logger(__name__)
@@ -128,7 +130,8 @@ def create_final_mix(voice_track, bg_music, gap_ranges):
     # If background music is too short, loop it
     while len(bg_music) < len(voice_track) + len(voice_track) * 0.1:
         logger.info(
-            f"Background music too short ({len(bg_music)}ms vs {len(voice_track)}ms), looping..."
+            f"Background music too short "
+            f"({len(bg_music)}ms vs {len(voice_track)}ms), looping..."
         )
         bg_music = bg_music + bg_music
 
@@ -184,7 +187,7 @@ def produce_audio_mixed_track():
     voice_track, gap_ranges = build_voice_track(voice_segs)
 
     # Step 3: Load background music
-    bg_music = load_background_music(len(voice_track))
+    bg_music = load_background_music()
 
     # Step 4: Create final mix
     final_mix = create_final_mix(voice_track, bg_music, gap_ranges)
