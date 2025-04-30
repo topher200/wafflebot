@@ -84,21 +84,16 @@ async def perform_download(message):
             logger.info(f"Downloaded {attachment.filename}")
 
 
-@client.event
-async def on_ready():
-    logger.info(f"Logged in as {client.user}")
-    channel = client.get_channel(CHANNEL_ID)
+async def process_messages(channel):
+    """
+    Process MESSAGES_TO_PROCESS messages in the channel.
 
-    if channel is None:
-        logger.error("Channel not found!")
-        await client.close()
-        return
-
-    # Iterate through the latest messages in the channel and download the audio
-    # files if they either:
-    # 1. Don't have a checkmark, or
-    # 2. Have a repeat emoji (regardless of checkmark)
-    async for message in channel.history(limit=MESSAGES_TO_PROCESS):
+    Download audio files if they either:
+    1. Don't have a checkmark, or
+    2. Have a repeat emoji (regardless of checkmark)
+    """
+    messages = await channel.history(limit=MESSAGES_TO_PROCESS)
+    async for message in messages:
         message = EnhancedMessage(message)
         should_process = False
 
@@ -115,6 +110,18 @@ async def on_ready():
         else:
             logger.info(f"Skipping message {message}")
 
+
+@client.event
+async def on_ready():
+    logger.info(f"Logged in as {client.user}")
+    channel = client.get_channel(CHANNEL_ID)
+
+    if channel is None:
+        logger.error("Channel not found!")
+        await client.close()
+        return
+
+    await process_messages(channel)
     await client.close()
 
 
