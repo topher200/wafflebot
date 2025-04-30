@@ -25,8 +25,16 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY . .
 
-# Switch to non-root user
+# Create and set permissions for intermediate directories
+RUN mkdir -p /app/data/voice-memos && \
+    chown -R topher:topher /app/data/voice-memos
+RUN mkdir -p /app/data/podcast && \
+    chown -R topher:topher /app/data/podcast
+
+# Set ownership of the entire app directory
 RUN chown -R topher:topher /app
+
+# Switch to non-root user
 USER topher
 
 ENV PATH="/app/.venv/bin:$PATH"

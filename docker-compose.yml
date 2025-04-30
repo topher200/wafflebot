@@ -2,23 +2,21 @@ services:
   file-downloader:
     build:
       context: .
-      args:
-        USER_ID: ${UID:-1000}
-        GROUP_ID: ${GID:-1000}
     volumes:
       - ./.env:/app/.env:ro
-      - ./data/voice-memos:/app/data/voice-memos
+      - voice-memos:/app/data/voice-memos
     command: uv run python src/file_downloader/download.py
 
   audio-mixer:
     build:
       context: .
-      args:
-        USER_ID: ${UID:-1000}
-        GROUP_ID: ${GID:-1000}
     volumes:
       - ./.env:/app/.env:ro
       - ~/Dropbox/wafflebot/background-music:/app/static/background-music:ro
       - ./data/podcast:/app/data/podcast
-      - ./data/voice-memos:/app/data/voice-memos:ro
+      - voice-memos:/app/data/voice-memos:ro
     command: uv run python src/mixer/generate_audio.py
+
+volumes:
+  voice-memos:
+
