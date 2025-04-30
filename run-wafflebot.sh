@@ -2,9 +2,6 @@
 
 set -e
 
-echo "Download latest git version..."
-git fetch && git checkout origin/master
-
 echo "Building Docker images..."
 docker compose build
 
