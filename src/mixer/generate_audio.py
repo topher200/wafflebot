@@ -19,7 +19,7 @@ OUTRO_MS = 8000  # music outro length
 CROSSFADE_MS = 500  # crossfade between memos
 GAP_MS = 3000  # music-only between memos
 VOICE_FADE_MS = 200  # fade-in/out on memos
-MUSIC_UNDER_VOICE_DB = -20  # dB lowering under speech
+MUSIC_UNDER_VOICE_DB = -22  # dB lowering under speech
 MUSIC_WITHOUT_VOICE_DB = -10  # little lower music when there is no voice
 GAP_FADE_MS = 2000  # fade in/out for gap transitions
 MAX_LENGTH_MS = int(datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000)
