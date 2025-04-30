@@ -59,9 +59,11 @@ class EnhancedMessage:
     def __str__(self):
         attachments_str = ", ".join(a.filename for a in self._message.attachments)
         return (
-            f"Message(id={self._message.id}, "
+            f"Message("
+            f"Time={self._message.created_at.strftime('%Y-%m-%d %H:%M:%S')}, "
             f"author={self._message.author.name}, "
-            f"attachments=[{attachments_str}])"
+            f"attachments=[{attachments_str}], "
+            f"id={self._message.id})"
         )
 
     def __repr__(self):
