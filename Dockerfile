@@ -15,9 +15,7 @@ COPY pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=cache,target=/root/.cache/uv \
-    uv sync && \
-    . .venv/bin/activate && \
-    uv pip install -e .
+    uv sync --no-dev --locked
 
 COPY . .
 
@@ -25,4 +23,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "src/mixer/generate_audio.py"]
+CMD ["uv", "run", "python", "src/mixer/generate_audio.py"]
