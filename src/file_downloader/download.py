@@ -28,6 +28,26 @@ COMPLETED_EMOJI = "✅"
 # REPEAT_EMOJI is used by users to signal that a file should be reprocessed
 REPEAT_EMOJI = "🔁"
 
+
+class EnhancedMessage:
+    """
+    A wrapper class for discord.Message that provides a more readable string representation.
+    """
+
+    def __init__(self, message):
+        self._message = message
+
+    def __getattr__(self, attr):
+        return getattr(self._message, attr)
+
+    def __str__(self):
+        attachments_str = ", ".join(a.filename for a in self._message.attachments)
+        return f"Message(id={self._message.id}, author={self._message.author.name}, attachments=[{attachments_str}])"
+
+    def __repr__(self):
+        return self.__str__()
+
+
 # Here's the structure of a message.reactions:
 # [<Reaction emoji='✅' me=False count=1>, <Reaction emoji='🔁' me=False count=1>]
 
@@ -66,6 +86,7 @@ async def add_white_check_mark(message):
 
 
 async def perform_download(message):
+    message = EnhancedMessage(message)
     if not message.attachments:
         logger.warning("No attachments found")
         return
@@ -88,15 +109,17 @@ async def on_ready():
     # Iterate through the latest messages in the channel and remove the
     # :white_check_mark: from any which have a :repeat: emoji
     async for message in channel.history(limit=MESSAGES_TO_PROCESS):
+        message = EnhancedMessage(message)
         await remove_white_check_mark_if_repeat(message)
 
     # Iterate through the latest messages in the channel and download the audio
     # files of any which do not have a :white_check_mark:
     async for message in channel.history(limit=MESSAGES_TO_PROCESS):
+        message = EnhancedMessage(message)
         if await has_white_check_mark(message):
             logger.info(f"Skipping message due to {COMPLETED_EMOJI} {message}")
             continue
-        logger.info(f"Message: {message}, attachments: {message.attachments}")
+        logger.info(f"Processing {message}")
 
         await perform_download(message)
         await add_white_check_mark(message)
