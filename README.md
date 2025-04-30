@@ -2,38 +2,73 @@
 
 WaffleBot is a Discord bot that collects voice memos from a channel, combines
 them into a single audio file with intro, outro, and interlude music, and
-prepares it for podcast hosting.
+uploads the result to Dropbox/PushPod.
 
-## Setup
+## Development
 
-1. **Build the Docker image:**
-
-   ```bash
-   docker build -t wafflebot .
-   ```
-
-2. **Run the Docker container for different services:**
-
-   - **Download files from Discord:**
-
-     ```bash
-     docker run -it --rm wafflebot python src/file_downloader/main.py
-     ```
-
-   - **Generate audio file:**
-
-     ```bash
-     docker run -it --rm wafflebot python src/mixer/generate_audio.py
-     ```
-
-   - **Upload podcast:**
-
-     ```bash
-     docker run -it --rm wafflebot python src/podcast_uploader/main.py
-     ```
-
-3. **Run tests:**
+1. **Run tests:**
 
    ```bash
    uv run pytest -v
    ```
+
+## Deployment
+
+WaffleBot can be deployed as a daily automated service using Docker Compose and systemd.
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- systemd (standard on most Linux distributions)
+- sudo access for systemd service installation
+
+### Installation
+
+1. **Update the environment variables:**  
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Install the systemd service and timer:**
+
+   ```bash
+   ./install-systemd-scripts.sh
+   ```
+
+   This will:
+   - Copy the systemd service and timer files to `/etc/systemd/system/`
+   - Enable and start the timer
+   - Set up daily automated runs at midnight Eastern Time
+
+### Manual Control
+
+- **Run manually:**
+
+  ```bash
+  systemctl start homelab-run-wafflebot
+  ```
+
+  or
+
+  ```bash
+  ./run-wafflebot.sh
+  ```
+
+- **Check service status:**
+
+  ```bash
+  systemctl status homelab-run-wafflebot.timer
+  ```
+
+- **View logs:**
+
+  ```bash
+  journalctl -u homelab-run-wafflebot
+  ```
+
+- **Stop the service from running:**
+
+  ```bash
+  systemctl stop homelab-run-wafflebot.timer
+  ```

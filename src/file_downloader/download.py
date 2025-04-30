@@ -71,7 +71,7 @@ async def perform_download(message):
         return
     for attachment in message.attachments:
         if attachment.filename.endswith((".mp3", ".wav", ".m4a")):
-            await attachment.save(f"static/local-sample-files/{attachment.filename}")
+            await attachment.save(f"data/voice-memos/{attachment.filename}")
             logger.info(f"Downloaded {attachment.filename}")
 
 
