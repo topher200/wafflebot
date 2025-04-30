@@ -17,7 +17,6 @@ echo "Running audio mixer..."
 docker compose run --rm audio-mixer
 
 echo "Uploading podcast..."
-chown -R topher:topher data/podcast
 cp data/podcast/* "/home/topher/Dropbox/Apps/PushPod/Haotic Waffles"
 
 echo "Cleaning up voice memos..."
