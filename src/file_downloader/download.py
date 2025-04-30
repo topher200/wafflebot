@@ -117,8 +117,7 @@ async def process_messages(channel):
     1. Don't have a checkmark, or
     2. Have a repeat emoji (regardless of checkmark)
     """
-    history = await channel.history(limit=MESSAGES_TO_PROCESS)
-    async for message in history:
+    async for message in channel.history(limit=MESSAGES_TO_PROCESS):
         message = EnhancedMessage(message)
         should_process = False
 
