@@ -1,13 +1,21 @@
 services:
   file-downloader:
-    build: .
+    build:
+      context: .
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
     volumes:
       - ./.env:/app/.env:ro
       - ./data/voice-memos:/app/data/voice-memos
     command: uv run python src/file_downloader/download.py
 
   audio-mixer:
-    build: .
+    build:
+      context: .
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
     volumes:
       - ./.env:/app/.env:ro
       - ~/Dropbox/wafflebot/background-music:/app/static/background-music:ro

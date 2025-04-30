@@ -1,6 +1,12 @@
 # syntax=docker/dockerfile:1.4
 FROM python:3.13-slim
 
+# Create group and user that match host's UID/GID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g ${GROUP_ID} topher && \
+    useradd -u ${USER_ID} -g ${GROUP_ID} -m topher
+
 WORKDIR /app
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -18,6 +24,10 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     uv sync --no-dev --locked
 
 COPY . .
+
+# Switch to non-root user
+RUN chown -R topher:topher /app
+USER topher
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
