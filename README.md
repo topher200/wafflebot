@@ -43,7 +43,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    This will:
    - Copy the systemd service and timer files to `/etc/systemd/system/`
    - Enable and start the timer
-   - Set up daily automated runs at midnight Eastern Time
+   - Set up daily automated runs overnight
 
 ### Manual Control
 

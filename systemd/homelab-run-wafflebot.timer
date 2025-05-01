@@ -1,8 +1,8 @@
 [Unit]
-Description=Run WaffleBot daily at midnight
+Description=Run WaffleBot daily at 4am server time
 
 [Timer]
-OnCalendar=00:00:00
+OnCalendar=04:00:00
 Persistent=true
 
 [Install]
