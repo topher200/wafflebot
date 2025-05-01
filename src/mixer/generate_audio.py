@@ -68,11 +68,6 @@ def load_voice_memos() -> List[AudioSegment]:
         # Get the normalized version of this segment
         normalized_seg = normalized_combined[current_pos : current_pos + len(seg)]
 
-        # Trim silence from start and end
-        normalized_seg = normalized_seg.strip_silence(
-            silence_len=1000, silence_thresh=-40
-        )
-
         # Add fades
         normalized_seg = normalized_seg.fade_in(VOICE_FADE_MS).fade_out(VOICE_FADE_MS)
 
