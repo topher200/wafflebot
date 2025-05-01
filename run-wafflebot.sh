@@ -17,13 +17,14 @@ OUTPUT_DIR="/home/topher/Dropbox/Apps/PushPod/Haotic Waffles"
 
 # find the latest file in the output directory
 mkdir -p "$OUTPUT_DIR"
-LATEST_FILE=$(ls -t "$OUTPUT_DIR"/*.mp3 | head -n 1)
+LATEST_FILE=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.mp3" -type f -printf '%T@ %p\n' | sort -nr | head -n1 | cut -d' ' -f2-)
 
-# get its prefix (e.g. "1-April 30, 2025"), default to "1" if no files found
-PREFIX=$(if [ -n "$LATEST_FILE" ]; then basename "$LATEST_FILE" .mp3 | cut -d '-' -f 1; else echo "1"; fi)
+# create file prefix (e.g. "0001-April 30, 2025"), default to "0001" if no files found
+PREVIOUS_PREFIX=$(if [ -n "$LATEST_FILE" ]; then basename "$LATEST_FILE" .mp3 | cut -d '-' -f 1; else echo "0000"; fi)
+NEW_PREFIX=$(printf "%04d" $((PREVIOUS_PREFIX + 1)))
 
-# rename our file to include that prefix, +1, plus today's date (e.g. "2-April 30, 2025")
-NEW_FILE="$PREFIX-$(date +"%B %d, %Y").mp3"
+# rename our file to include the prefix and today's date (e.g. "0002-April 31, 2025")
+NEW_FILE="$NEW_PREFIX-$(date +"%B %d, %Y").mp3"
 echo "Uploading $NEW_FILE"
 mv "$INPUT_FILE" "$OUTPUT_DIR/$NEW_FILE"
 
