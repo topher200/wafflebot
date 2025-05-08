@@ -34,7 +34,7 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-MESSAGES_TO_PROCESS = 10
+MESSAGES_TO_PROCESS = 30
 
 # COMPLETED_EMOJI is used by this bot to signal that a file has been processed
 COMPLETED_EMOJI = "✅"
