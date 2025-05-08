@@ -1,4 +1,3 @@
-import datetime
 import os
 from pathlib import Path
 
@@ -102,11 +101,9 @@ async def perform_download(message):
         return
     for attachment in message.attachments:
         if attachment.filename.endswith((".mp3", ".wav", ".m4a", ".ogg")):
-            # prefix with a sortable timestamp with milliseconds precision
-            current_time = datetime.datetime.now(tz=datetime.UTC).strftime(
-                "%Y-%m-%d_%H-%M-%S_%f"
-            )
-            save_path = VOICE_MEMOS_DIR / f"{current_time}-{attachment.filename}"
+            # prefix with a sortable timestamp
+            created_at_utc_str = message.created_at.strftime("%Y-%m-%d_%H-%M-%S")
+            save_path = VOICE_MEMOS_DIR / f"{created_at_utc_str}-{attachment.filename}"
             await attachment.save(str(save_path))
             logger.info(f"Downloaded {attachment.filename}")
         else:
@@ -123,7 +120,7 @@ async def process_messages(channel):
     1. Don't have a checkmark, or
     2. Have a repeat emoji (regardless of checkmark)
     """
-    async for message in channel.history(limit=MESSAGES_TO_PROCESS, oldest_first=True):
+    async for message in channel.history(limit=MESSAGES_TO_PROCESS):
         message = EnhancedMessage(message)
         should_process = False
 
