@@ -21,6 +21,7 @@ LATEST_FILE=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.mp3" -type f -printf '%T@ 
 
 # create file prefix (e.g. "0001-April 30, 2025"), default to "0001" if no files found
 PREVIOUS_PREFIX=$(if [ -n "$LATEST_FILE" ]; then basename "$LATEST_FILE" .mp3 | cut -d '-' -f 1; else echo "0000"; fi)
+PREVIOUS_PREFIX=$((10#$PREVIOUS_PREFIX))  # Force base-10
 NEW_PREFIX=$(printf "%04d" $((PREVIOUS_PREFIX + 1)))
 
 # rename our file to include the prefix and today's date (e.g. "0002-April 31, 2025")
