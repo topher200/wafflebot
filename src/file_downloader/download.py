@@ -11,22 +11,6 @@ logger = setup_logger(__name__)
 VOICE_MEMOS_DIR = Path("data/voice-memos")
 VOICE_MEMOS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Load environment variables from .env file
-load_dotenv()
-
-TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID_STR = os.getenv("CHANNEL_ID")
-
-if TOKEN is None:
-    raise ValueError("DISCORD_TOKEN environment variable is not set")
-if CHANNEL_ID_STR is None:
-    raise ValueError("CHANNEL_ID environment variable is not set")
-
-try:
-    CHANNEL_ID = int(CHANNEL_ID_STR)
-except ValueError as e:
-    raise ValueError(f"CHANNEL_ID must be an integer, got: {CHANNEL_ID_STR}") from e
-
 # Set up the client with the necessary intents
 intents = discord.Intents.default()
 intents.messages = True
@@ -152,5 +136,24 @@ async def on_ready():
     await client.close()
 
 
-if __name__ == "__main__":
+def main():
+    load_dotenv()
+    TOKEN = os.getenv("DISCORD_TOKEN")
+    CHANNEL_ID_STR = os.getenv("CHANNEL_ID")
+
+    if TOKEN is None:
+        raise ValueError("DISCORD_TOKEN environment variable is not set")
+    if CHANNEL_ID_STR is None:
+        raise ValueError("CHANNEL_ID environment variable is not set")
+
+    try:
+        global CHANNEL_ID
+        CHANNEL_ID = int(CHANNEL_ID_STR)
+    except ValueError as e:
+        raise ValueError(f"CHANNEL_ID must be an integer, got: {CHANNEL_ID_STR}") from e
+
     client.run(TOKEN)
+
+
+if __name__ == "__main__":
+    main()
