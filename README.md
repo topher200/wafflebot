@@ -14,22 +14,22 @@ uploads the result to Dropbox/PushPod.
 
 ## Development
 
-1. **Run unit tests:**
+1. **Run unit tests (fast):**
 
    ```bash
-   uv run pytest src/ -v
+   uv run pytest tests/unit/ -v
    ```
 
-2. **Run end-to-end tests:**
-
-   ```bash
-   ./run-e2e-tests.sh
-   ```
-
-   Or manually:
+2. **Run end-to-end tests (slow):**
 
    ```bash
    uv run pytest tests/e2e/ -v
+   ```
+
+   Or use the convenience script:
+
+   ```bash
+   ./run-e2e-tests.sh
    ```
 
    The e2e tests will:
@@ -40,7 +40,7 @@ uploads the result to Dropbox/PushPod.
 3. **Run all tests:**
 
    ```bash
-   uv run pytest -v
+   uv run pytest tests/ -v
    ```
 
 ## Deployment
@@ -114,7 +114,10 @@ The project includes comprehensive end-to-end tests that validate the complete a
 
 ```
 tests/
-├── e2e/                           # End-to-end tests
+├── unit/                          # Fast unit tests
+│   ├── test_download.py          # Discord file downloader tests
+│   └── test_publish.py           # Publish script tests
+├── e2e/                          # End-to-end tests
 │   ├── conftest.py               # pytest fixtures
 │   ├── test_full_pipeline.py     # main e2e tests
 │   ├── fixtures/
@@ -123,6 +126,8 @@ tests/
 │       ├── audio_downloader.py   # download & cache test audio
 │       └── docker_helpers.py     # docker compose test helpers
 ├── cache/                        # cached test audio files (gitignored)
+│   ├── voice-memos/              # test voice memo files
+│   └── background-music/         # test background music files
 └── .env.test                     # test environment configuration
 ```
 

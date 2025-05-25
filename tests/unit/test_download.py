@@ -3,7 +3,7 @@ from unittest.mock import ANY, AsyncMock, Mock
 
 import pytest
 
-from .download import (
+from src.file_downloader.download import (
     COMPLETED_EMOJI,
     REPEAT_EMOJI,
     add_white_check_mark,
