@@ -2,30 +2,17 @@ services:
   file-downloader:
     build:
       context: .
-    volumes:
-      - ./.env:/app/.env:ro
-      - voice-memos:/app/data/voice-memos
     command: uv run python src/file_downloader/download.py
 
   audio-mixer:
     build:
       context: .
-    volumes:
-      - ./.env:/app/.env:ro
-      - ~/Dropbox/wafflebot/background-music:/app/static/background-music:ro
-      - podcast-audio:/app/data/podcast
-      - voice-memos:/app/data/voice-memos:ro
     command: uv run python src/mixer/generate_audio.py
 
   publish-to-dropbox:
     build:
       context: .
-    volumes:
-      - podcast-audio:/app/data/podcast:ro
-      - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output
     command: bash src/publish-podcast-to-dropbox/publish.sh
 
-volumes:
-  voice-memos:
-  podcast-audio:
+# Volumes will be defined in override files
 

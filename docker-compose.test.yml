@@ -1,0 +1,17 @@
+services:
+  audio-mixer:
+    volumes:
+      - ./tests/.env.test:/app/.env:ro
+      - ./tests/cache/voice-memos:/app/data/voice-memos:ro
+      - ./tests/cache/background-music:/app/data/background-music:ro
+      - test-podcast-audio:/app/data/podcast
+
+  publish-to-dropbox:
+    user: root
+    volumes:
+      - test-podcast-audio:/app/data/podcast:ro
+      - test-dropbox-output:/app/dropbox-output
+
+volumes:
+  test-podcast-audio:
+  test-dropbox-output: 

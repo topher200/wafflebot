@@ -13,7 +13,7 @@ if [ ! -f "$INPUT_FILE" ]; then
     exit 1
 fi
 
-# Create output directory if it doesn't exist (should already be mounted)
+# Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
 # Find the latest file in the output directory
@@ -27,6 +27,8 @@ NEW_PREFIX=$(printf "%04d" $((PREVIOUS_PREFIX + 1)))
 # Rename our file to include the prefix and today's date (e.g. "0002-April 31, 2025")
 NEW_FILE="$NEW_PREFIX-$(date +"%B %d, %Y").mp3"
 echo "Uploading $NEW_FILE"
+
+# Copy the file to output directory
 cp "$INPUT_FILE" "$OUTPUT_DIR/$NEW_FILE"
 
 echo "Podcast published successfully to Dropbox!"

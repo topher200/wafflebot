@@ -1,0 +1,21 @@
+{
+  "test_files": [
+    {
+      "url": "https://www.kozco.com/tech/LRMonoPhase4.mp3",
+      "filename": "test-memo-1.wav",
+      "description": "30 second speech"
+    },
+    {
+      "url": "https://www.kozco.com/tech/WAV-MP3.wav",
+      "filename": "test-memo-2.wav",
+      "description": "11 second speech with mp3 compression damange"
+    }
+  ],
+  "background_music": [
+    {
+      "url": "https://www.kozco.com/tech/organfinale.mp3",
+      "filename": "test-background-1.mp3",
+      "description": "Organ finale background music for testing"
+    }
+  ]
+}

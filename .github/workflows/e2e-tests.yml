@@ -1,0 +1,43 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: uv sync --group dev
+
+      - name: Create test environment file
+        run: |
+          echo "# Test environment for CI" > tests/.env.test
+          echo "TEST_MODE=true" >> tests/.env.test
+          echo "CI=true" >> tests/.env.test
+
+      - name: Run E2E tests
+        run: uv run pytest tests/e2e/ -v --tb=short
+
+      - name: Clean up Docker resources
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml down -v --remove-orphans || true
+          docker system prune -f || true

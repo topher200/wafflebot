@@ -14,7 +14,30 @@ uploads the result to Dropbox/PushPod.
 
 ## Development
 
-1. **Run tests:**
+1. **Run unit tests:**
+
+   ```bash
+   uv run pytest src/ -v
+   ```
+
+2. **Run end-to-end tests:**
+
+   ```bash
+   ./run-e2e-tests.sh
+   ```
+
+   Or manually:
+
+   ```bash
+   uv run pytest tests/e2e/ -v
+   ```
+
+   The e2e tests will:
+   - Download test audio files from URLs (cached locally)
+   - Run the complete audio processing pipeline in Docker
+   - Verify that files are correctly processed and published
+
+3. **Run all tests:**
 
    ```bash
    uv run pytest -v
@@ -82,3 +105,31 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   ```bash
   systemctl stop homelab-run-wafflebot.timer
   ```
+
+## Testing Architecture
+
+The project includes comprehensive end-to-end tests that validate the complete audio processing pipeline:
+
+### Test Structure
+
+```
+tests/
+├── e2e/                           # End-to-end tests
+│   ├── conftest.py               # pytest fixtures
+│   ├── test_full_pipeline.py     # main e2e tests
+│   ├── fixtures/
+│   │   └── test_audio_urls.json  # URLs for test audio files
+│   └── utils/
+│       ├── audio_downloader.py   # download & cache test audio
+│       └── docker_helpers.py     # docker compose test helpers
+├── cache/                        # cached test audio files (gitignored)
+└── .env.test                     # test environment configuration
+```
+
+### Docker Configuration
+
+The project uses Docker Compose override files to avoid duplication:
+
+- `docker-compose.yml` - Base service definitions
+- `docker-compose.override.yml` - Production volume mounts (auto-loaded)
+- `docker-compose.test.yml` - Test-specific volume mounts

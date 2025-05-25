@@ -30,6 +30,8 @@ RUN mkdir -p /app/data/voice-memos && \
     chown -R topher:topher /app/data/voice-memos
 RUN mkdir -p /app/data/podcast && \
     chown -R topher:topher /app/data/podcast
+RUN mkdir -p /app/dropbox-output && \
+    chown -R topher:topher /app/dropbox-output
 
 # Set ownership of the entire app directory
 RUN chown -R topher:topher /app
