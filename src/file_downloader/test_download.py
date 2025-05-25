@@ -1,3 +1,4 @@
+import datetime
 from unittest.mock import ANY, AsyncMock, Mock
 
 import pytest
@@ -98,11 +99,16 @@ async def test_process_messages_with_checkmark():
     check_reaction.emoji = COMPLETED_EMOJI
     check_reaction.me = True
     mock_message.reactions = [check_reaction]
+    mock_message.created_at = datetime.datetime.now()
+    mock_message.author = Mock()
+    mock_message.author.name = "tester"
+    mock_message.id = 123
 
     # Create a mock attachment
     mock_attachment = AsyncMock()
     mock_attachment.filename = "test.mp3"
     mock_message.attachments = [mock_attachment]
+    mock_message.add_reaction = AsyncMock()
 
     # Create mock channel that returns our message
     mock_channel = AsyncMock()
@@ -125,11 +131,16 @@ async def test_process_messages_with_checkmark_and_repeat():
     repeat_reaction = Mock()
     repeat_reaction.emoji = REPEAT_EMOJI
     mock_message.reactions = [check_reaction, repeat_reaction]
+    mock_message.created_at = datetime.datetime.now()
+    mock_message.author = Mock()
+    mock_message.author.name = "tester"
+    mock_message.id = 456
 
     # Create a mock attachment
     mock_attachment = AsyncMock()
     mock_attachment.filename = "test.mp3"
     mock_message.attachments = [mock_attachment]
+    mock_message.add_reaction = AsyncMock()
 
     # Create mock channel that returns our message
     mock_channel = AsyncMock()
