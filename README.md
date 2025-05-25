@@ -8,6 +8,10 @@ uploads the result to Dropbox/PushPod.
 
 ![WaffleBot Architecture](static/wafflebot.excalidraw.png)
 
+- **file-downloader**: Downloads voice memos from Discord
+- **audio-mixer**: Combines memos with music into a podcast audio file
+- **publish-to-dropbox**: Publishes the podcast audio to Dropbox with versioned naming ([details](src/publish-podcast-to-dropbox/README.md))
+
 ## Development
 
 1. **Run tests:**
@@ -52,6 +56,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   ```bash
   docker compose run --build --rm file-downloader
   docker compose run --build --rm audio-mixer
+  docker compose run --build --rm publish-to-dropbox
   ```
 
   or

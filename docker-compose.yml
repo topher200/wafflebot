@@ -13,10 +13,19 @@ services:
     volumes:
       - ./.env:/app/.env:ro
       - ~/Dropbox/wafflebot/background-music:/app/static/background-music:ro
-      - ./data/podcast:/app/data/podcast
+      - podcast-audio:/app/data/podcast
       - voice-memos:/app/data/voice-memos:ro
     command: uv run python src/mixer/generate_audio.py
 
+  publish-to-dropbox:
+    build:
+      context: .
+    volumes:
+      - podcast-audio:/app/data/podcast:ro
+      - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output
+    command: bash src/publish-podcast-to-dropbox/publish.sh
+
 volumes:
   voice-memos:
+  podcast-audio:
 

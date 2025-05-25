@@ -36,5 +36,12 @@ exclude = [
 pythonVersion = "3.13"
 typeCheckingMode = "basic"
 
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["src"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/file_downloader"]
