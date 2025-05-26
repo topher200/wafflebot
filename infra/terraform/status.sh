@@ -4,6 +4,8 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [staging|prod|all]"
@@ -19,7 +21,7 @@ show_usage() {
 # Function to show environment status
 show_env_status() {
     local env="$1"
-    local tfvars_file="environments/${env}.tfvars"
+    local tfvars_file="$SCRIPT_DIR/environments/${env}.tfvars"
 
     echo "📊 ${env^^} Environment Status:"
     echo "================================"
@@ -31,17 +33,17 @@ show_env_status() {
     fi
 
     # Check if workspace exists
-    if terraform workspace list | grep -q "^\*\?\s*${env}$"; then
-        terraform workspace select ${env} >/dev/null 2>&1
+    if terraform -chdir="$SCRIPT_DIR" workspace list | grep -q "^\*\?\s*${env}$"; then
+        terraform -chdir="$SCRIPT_DIR" workspace select ${env} >/dev/null 2>&1
 
         echo "✅ Workspace: ${env}"
         echo "📁 Config file: ${tfvars_file}"
 
         # Show key outputs if they exist
-        if terraform output >/dev/null 2>&1; then
-            echo "🌐 Domain: $(terraform output -raw custom_domain_url 2>/dev/null || echo 'Not deployed')"
-            echo "🪣 S3 Bucket: $(terraform output -raw s3_bucket_name 2>/dev/null || echo 'Not deployed')"
-            echo "☁️  CloudFront: $(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo 'Not deployed')"
+        if terraform -chdir="$SCRIPT_DIR" output >/dev/null 2>&1; then
+            echo "🌐 Domain: $(terraform -chdir="$SCRIPT_DIR" output -raw custom_domain_url 2>/dev/null || echo 'Not deployed')"
+            echo "🪣 S3 Bucket: $(terraform -chdir="$SCRIPT_DIR" output -raw s3_bucket_name 2>/dev/null || echo 'Not deployed')"
+            echo "☁️  CloudFront: $(terraform -chdir="$SCRIPT_DIR" output -raw cloudfront_distribution_id 2>/dev/null || echo 'Not deployed')"
         else
             echo "⚠️  Status: Not deployed or no outputs available"
         fi
@@ -63,7 +65,7 @@ fi
 ENVIRONMENT="$1"
 
 echo "🔧 Initializing Terraform..."
-terraform init >/dev/null
+terraform -chdir="$SCRIPT_DIR" init >/dev/null
 
 if [ "$ENVIRONMENT" = "all" ]; then
     show_env_status "staging"
