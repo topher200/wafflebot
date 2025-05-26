@@ -12,6 +12,36 @@ uploads the result to Dropbox/PushPod.
 - **audio-mixer**: Combines memos with music into a podcast audio file
 - **publish-to-dropbox**: Publishes the podcast audio to Dropbox with versioned naming ([details](src/publish-podcast-to-dropbox/README.md))
 
+## Infrastructure
+
+WaffleBot includes AWS infrastructure for hosting the podcast with a custom domain:
+
+- **Private S3 bucket** - Stores podcast files and RSS feed securely
+- **CloudFront CDN** - Fast global delivery with custom domain support
+- **HTTPS certificate** - Automatic SSL via AWS Certificate Manager
+- **Origin Access Control** - Blocks direct S3 access, only allows CloudFront
+- **Multi-environment support** - Separate staging and production deployments
+
+### Quick Start
+
+Deploy to staging:
+```bash
+cd infra/terraform
+./deploy.sh staging
+```
+
+Deploy to production:
+```bash
+./deploy.sh prod
+```
+
+Check deployment status:
+```bash
+./status.sh all
+```
+
+For detailed infrastructure documentation, see [`infra/terraform/README.md`](infra/terraform/README.md).
+
 ## Development
 
 1. **Run unit tests (fast):**
