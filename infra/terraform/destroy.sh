@@ -43,16 +43,16 @@ if [ ! -f "$TFVARS_FILE" ]; then
 fi
 
 echo "🔧 Initializing Terraform for ${ENVIRONMENT}..."
-terraform init "$SCRIPT_DIR"
+terraform -chdir="$SCRIPT_DIR" init
 
 echo "🏗️  Selecting ${ENVIRONMENT} workspace..."
-terraform workspace select ${ENVIRONMENT} 2>/dev/null || {
+terraform -chdir="$SCRIPT_DIR" workspace select ${ENVIRONMENT} 2>/dev/null || {
     echo "❌ Workspace ${ENVIRONMENT} does not exist!"
     exit 1
 }
 
 echo "📋 Planning ${ENVIRONMENT} destruction..."
-terraform plan -destroy -var-file="$TFVARS_FILE"
+terraform -chdir="$SCRIPT_DIR" plan -destroy -var-file="$TFVARS_FILE"
 
 echo ""
 echo "⚠️  WARNING: This will PERMANENTLY DELETE all ${ENVIRONMENT^^} infrastructure!"
@@ -65,7 +65,7 @@ read -p "💥 Are you SURE you want to destroy ${ENVIRONMENT}? (y/N): " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "💥 Destroying ${ENVIRONMENT}..."
-    terraform destroy -var-file="$TFVARS_FILE"
+    terraform -chdir="$SCRIPT_DIR" destroy -var-file="$TFVARS_FILE"
 
     echo ""
     echo "✅ ${ENVIRONMENT^^} infrastructure destroyed!"

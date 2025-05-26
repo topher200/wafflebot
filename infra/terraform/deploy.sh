@@ -43,13 +43,10 @@ if [ ! -f "$TFVARS_FILE" ]; then
 fi
 
 echo "🔧 Initializing Terraform for ${ENVIRONMENT}..."
-terraform init "$SCRIPT_DIR"
+terraform -chdir="$SCRIPT_DIR" init
 
 echo "🏗️  Selecting/creating ${ENVIRONMENT} workspace..."
-terraform workspace select ${ENVIRONMENT} 2>/dev/null || terraform workspace new ${ENVIRONMENT}
-
-echo "📋 Planning ${ENVIRONMENT} deployment..."
-terraform plan -var-file="$TFVARS_FILE"
+terraform -chdir="$SCRIPT_DIR" workspace select ${ENVIRONMENT} 2>/dev/null || terraform -chdir="$SCRIPT_DIR" workspace new ${ENVIRONMENT}
 
 echo ""
 # Add extra warning for production
@@ -58,21 +55,9 @@ if [ "$ENVIRONMENT" = "prod" ]; then
     echo ""
 fi
 
-read -p "🚀 Deploy ${ENVIRONMENT} infrastructure? (y/N): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "🚀 Deploying ${ENVIRONMENT}..."
-    terraform apply -var-file="$TFVARS_FILE"
+echo "🚀 Deploying ${ENVIRONMENT}..."
+terraform -chdir="$SCRIPT_DIR" apply -var-file="$TFVARS_FILE"
 
-    echo ""
-    echo "✅ ${ENVIRONMENT^^} deployment complete!"
-    echo ""
-    echo "📝 Next steps:"
-    echo "1. Upload your RSS feed: aws s3 cp rss s3://\$(terraform output -raw s3_bucket_name)/rss"
-    echo "2. Upload audio files: aws s3 cp episode1.mp3 s3://\$(terraform output -raw s3_bucket_name)/episode1.mp3"
-    echo "3. Your ${ENVIRONMENT} podcast will be available at: \$(terraform output -raw custom_domain_url)"
-    echo ""
-    echo "⏰ Note: CloudFront deployment can take 10-20 minutes to fully propagate"
-else
-    echo "❌ ${ENVIRONMENT} deployment cancelled"
-fi
+echo ""
+echo "✅ ${ENVIRONMENT^^} deployment complete!"
+echo "⏰ Note: CloudFront deployment can take 10-20 minutes to fully propagate"
