@@ -28,17 +28,24 @@ Internet → podcast.yourdomain.com → CloudFront → Private S3 Bucket
 
 ## Environment Configuration
 
-The infrastructure uses environment-specific configuration files:
+The infrastructure uses environment-specific configuration files that you create from the example:
 
-- `environments/staging.tfvars` - Staging environment settings
-- `environments/prod.tfvars` - Production environment settings
+### Setup Environment Files
 
-### Example Environment Files
+1. **Create environment configurations from the example:**
+   ```bash
+   # Copy the example to create your environment files
+   cp terraform.tfvars.example environments/staging.tfvars
+   cp terraform.tfvars.example environments/prod.tfvars
+   ```
+
+2. **Edit each file with environment-specific values:**
 
 **Staging** (`environments/staging.tfvars`):
 ```hcl
 bucket_name = "my-podcast-staging"
 domain_name = "staging-podcast.mydomain.com"
+route53_zone_id = "Z1234567890ABC"
 environment = "staging"
 ```
 
@@ -46,8 +53,11 @@ environment = "staging"
 ```hcl
 bucket_name = "my-podcast-prod"
 domain_name = "podcast.mydomain.com"
+route53_zone_id = "Z1234567890ABC"
 environment = "prod"
 ```
+
+**Note:** The environment files (`environments/*.tfvars`) are gitignored to keep your credentials safe.
 
 ## Deployment
 
