@@ -22,23 +22,35 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
 - **Origin Access Control** - Blocks direct S3 access, only allows CloudFront
 - **Multi-environment support** - Separate staging and production deployments
 
-### Quick Start
+### Setup
 
-Deploy to staging:
-```bash
-cd infra/terraform
-./deploy.sh staging
-```
+1. **Configure your environments:**
+   ```bash
+   cd infra/terraform
+   
+   # Copy example files and customize with your values
+   cp terraform.tfvars.example environments/staging.tfvars
+   cp terraform.tfvars.example environments/prod.tfvars
+   
+   # Edit each file with environment-specific values
+   # staging.tfvars: bucket_name = "my-podcast-staging", domain_name = "staging-podcast.mydomain.com"
+   # prod.tfvars: bucket_name = "my-podcast-prod", domain_name = "podcast.mydomain.com"
+   ```
 
-Deploy to production:
-```bash
-./deploy.sh prod
-```
+2. **Deploy to staging:**
+   ```bash
+   ./deploy.sh staging
+   ```
 
-Check deployment status:
-```bash
-./status.sh all
-```
+3. **Deploy to production:**
+   ```bash
+   ./deploy.sh prod
+   ```
+
+4. **Check deployment status:**
+   ```bash
+   ./status.sh all
+   ```
 
 For detailed infrastructure documentation, see [`infra/terraform/README.md`](infra/terraform/README.md).
 
