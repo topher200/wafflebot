@@ -57,11 +57,18 @@ async def test_perform_download_no_attachments(mock_message):
 
 
 @pytest.mark.asyncio
-async def test_perform_download_with_audio_file(mock_message):
+async def test_perform_download_with_audio_file():
+    # Create a mock message
+    mock_message = Mock()
+    mock_message.reactions = []
     # Create a mock attachment
     mock_attachment = AsyncMock()
     mock_attachment.filename = "test.mp3"
     mock_message.attachments = [mock_attachment]
+    mock_message.created_at = datetime.datetime.now()
+    mock_message.author = Mock()
+    mock_message.author.name = "tester"
+    mock_message.id = 1
 
     await perform_download(mock_message)
     mock_attachment.save.assert_called_once_with(ANY)
