@@ -1,0 +1,41 @@
+---
+description: 
+globs: src/file_downloader/**
+alwaysApply: false
+---
+# Discord Integration Rules
+
+@context {
+    "type": "integration",
+    "service": "discord",
+    "api_version": "discord.py 2.5.2"
+}
+
+## File Processing Patterns
+- @src/file_downloader/download.py - Main Discord client implementation
+- Voice attachments: `.mp3`, `.wav`, `.m4a`, `.ogg` only
+- Filename format: `YYYY-MM-DD_HH-MM-SS-original_name.ext`
+- Message limit: 30 most recent messages per run
+
+## Bot Behavior
+- ✅ emoji marks processed messages
+- 🔁 emoji triggers reprocessing
+- EnhancedMessage wrapper for readable logging
+- Async/await pattern for Discord API calls
+
+@environment_vars {
+    "DISCORD_TOKEN": "Bot token from Discord Developer Portal",
+    "CHANNEL_ID": "Target channel ID as integer string"
+}
+
+## Error Handling
+- Validate env vars on startup
+- Graceful channel not found handling  
+- Skip non-audio attachments with warnings
+- Proper Discord client cleanup in all cases
+
+@permissions_required [
+    "Read Message History",
+    "Add Reactions", 
+    "Read Messages"
+]

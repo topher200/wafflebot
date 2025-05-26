@@ -1,0 +1,48 @@
+---
+description: 
+globs: infra/**
+alwaysApply: false
+---
+# Infrastructure Rules
+
+@context {
+    "type": "infrastructure", 
+    "provider": "aws",
+    "iac_tool": "terraform"
+}
+
+## AWS Components
+- S3: Private bucket for podcast files and RSS feed
+- CloudFront: Global CDN with custom domain support
+- Route53: DNS management for custom domains
+- ACM: SSL certificate management
+- OAC: Origin Access Control for S3 security
+
+@environments {
+    "staging": "staging-podcast.domain.com",
+    "prod": "podcast.domain.com",
+    "isolation": "Separate workspaces and state files"
+}
+
+## Deployment Scripts
+- @infra/terraform/deploy.sh - Environment deployment
+- @infra/terraform/status.sh - Check deployment status  
+- @infra/terraform/destroy.sh - Environment cleanup
+
+## Docker Architecture
+- @docker-compose.yml - Base service definitions
+- @docker-compose.override.yml - Production volume mounts
+- @docker-compose.test.yml - Test-specific overrides
+- Sequential pipeline: file-downloader → audio-mixer → publish-to-dropbox
+
+@security_model [
+    "S3 bucket completely private",
+    "Only CloudFront can access S3 (via OAC)",
+    "HTTPS enforced with TLS 1.2+ minimum",
+    "Environment-based resource isolation"
+]
+
+## Production Deployment
+- @systemd/ - Service files for automated daily runs
+- @install-systemd-scripts.sh - Service installation
+- @run-wafflebot.sh - Manual pipeline execution
