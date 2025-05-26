@@ -138,3 +138,14 @@ The project uses Docker Compose override files to avoid duplication:
 - `docker-compose.yml` - Base service definitions
 - `docker-compose.override.yml` - Production volume mounts (auto-loaded)
 - `docker-compose.test.yml` - Test-specific volume mounts
+
+### GitHub Actions Workflows
+
+All workflows run on every pull request and merge to `master`:
+
+- **`test.yml`** - Fast unit tests (19 tests, ~30 seconds)
+- **`e2e-tests.yml`** - End-to-end tests (~3 tests, 30-50 seconds)
+- **`lint.yml`** - Code linting with Ruff
+- **`typecheck.yml`** - Type checking with Pyright
+
+Unit and e2e tests run in parallel for fast feedback, ensuring comprehensive testing on every change.

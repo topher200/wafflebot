@@ -1,4 +1,4 @@
-name: Python Tests
+name: Unit Tests
 
 on:
   push:
@@ -11,8 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python-setup
-      - name: Run tests
-        run: |
-          # Load environment variables from .env.test
-          export $(cat .env.test | xargs)
-          uv run pytest -v
+      - name: Run unit tests
+        run: uv run pytest tests/unit/ -v
