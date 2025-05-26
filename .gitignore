@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+!tests/.env.test*
 .DS_Store
 .vscode/
 .idea/
@@ -12,3 +13,5 @@ build/
 data/
 output/
 logs/
+tests/cache/*
+!tests/cache/.gitkeep

@@ -1,0 +1,21 @@
+services:
+  file-downloader:
+    volumes:
+      - ./.env:/app/.env:ro
+      - voice-memos:/app/data/voice-memos
+
+  audio-mixer:
+    volumes:
+      - ./.env:/app/.env:ro
+      - ~/Dropbox/wafflebot/background-music:/app/data/background-music:ro
+      - podcast-audio:/app/data/podcast
+      - voice-memos:/app/data/voice-memos:ro
+
+  publish-to-dropbox:
+    volumes:
+      - podcast-audio:/app/data/podcast:ro
+      - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output
+
+volumes:
+  voice-memos:
+  podcast-audio: 

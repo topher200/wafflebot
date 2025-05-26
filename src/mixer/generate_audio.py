@@ -11,7 +11,7 @@ from src.utils.logging import setup_logger
 logger = setup_logger(__name__)
 
 VOICE_DIR = pathlib.Path("data/voice-memos")
-MUSIC_DIR = pathlib.Path("static/background-music")
+MUSIC_DIR = pathlib.Path("data/background-music")
 PODCAST_OUTPUT_DIR = pathlib.Path("data/podcast")
 
 INTRO_MS = 5000  # music intro length
