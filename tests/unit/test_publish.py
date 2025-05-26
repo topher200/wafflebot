@@ -36,7 +36,12 @@ class TestPublishScript:
 
     def run_publish_script(self, temp_dir, env_vars=None):
         """Helper to run the publish script with custom environment."""
-        script_path = Path(__file__).parent / "publish.sh"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "src"
+            / "publish-podcast-to-dropbox"
+            / "publish.sh"
+        )
 
         # Set up environment variables
         env = os.environ.copy()
@@ -163,26 +168,46 @@ class TestPublishIntegration:
 
     def test_script_exists_and_executable(self):
         """Test that the publish script exists and is executable."""
-        script_path = Path(__file__).parent / "publish.sh"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "src"
+            / "publish-podcast-to-dropbox"
+            / "publish.sh"
+        )
         assert script_path.exists()
         assert os.access(script_path, os.X_OK)
 
     def test_script_has_shebang(self):
         """Test that script has proper shebang."""
-        script_path = Path(__file__).parent / "publish.sh"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "src"
+            / "publish-podcast-to-dropbox"
+            / "publish.sh"
+        )
         with open(script_path, "r") as f:
             first_line = f.readline().strip()
         assert first_line == "#!/bin/bash"
 
     def test_script_has_error_handling(self):
         """Test that script has 'set -e' for error handling."""
-        script_path = Path(__file__).parent / "publish.sh"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "src"
+            / "publish-podcast-to-dropbox"
+            / "publish.sh"
+        )
         content = script_path.read_text()
         assert "set -e" in content
 
     def test_script_uses_correct_paths(self):
         """Test that script uses the expected file paths."""
-        script_path = Path(__file__).parent / "publish.sh"
+        script_path = (
+            Path(__file__).parent.parent.parent
+            / "src"
+            / "publish-podcast-to-dropbox"
+            / "publish.sh"
+        )
         content = script_path.read_text()
 
         assert 'INPUT_FILE="data/podcast/voice_memo_mix.mp3"' in content
