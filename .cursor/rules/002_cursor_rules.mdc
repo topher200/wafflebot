@@ -1,0 +1,52 @@
+---
+description: when editing mdc files
+globs: 
+alwaysApply: false
+---
+# .mdc File Structure & Best Practices
+
+@structure {
+    "naming": "NNN_name.mdc (NNN = 001-299)",
+    "precedence": "Higher numbers override lower numbers",
+    "categories": {
+        "001-099": "Core/workspace rules",
+        "100-199": "Integration rules", 
+        "200-299": "Pattern rules"
+    }
+}
+
+## UI Components
+1. **Description** (top)
+   - Brief purpose summary
+   - Appears in AI context
+
+2. **Globs** (top)
+   - Comma-separated list
+   - Example: `/dir1/**/*,/dir2/**/*,/dir3/**/*`
+   - Use standard glob syntax
+
+3. **Body Text** (this section)
+   - Keep under 25 lines
+   - Use concise/shorthand
+   - Tag files with @
+   - Focus on key directives
+
+@best_practices [
+    {
+        "id": "ui_only_edits",
+        "rule": "Make changes through Cursor UI only, not direct file edits",
+        "severity": "error"
+    },
+    {
+        "id": "concise_content", 
+        "rule": "Keep body text under 25 lines",
+        "severity": "warning"
+    },
+    {
+        "id": "file_references",
+        "rule": "Use @ tags for file references",
+        "severity": "info"
+    }
+]
+
+**Best Practice**: The assistant may propose changes to .mdc files for the user to copy into the UI. The assistant should not attempt direct file edits to .mdc files.

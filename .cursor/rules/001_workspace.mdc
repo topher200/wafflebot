@@ -1,0 +1,42 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# WaffleBot Workspace
+
+@context {
+    "type": "workspace",
+    "purpose": "discord_podcast_automation",
+    "version": "0.1.0",
+    "architecture": "microservices_pipeline"
+}
+
+## Core Functions
+- Discord voice memo collection with smart duplicate detection
+- Professional audio mixing with background music integration  
+- Automated podcast publishing to Dropbox with versioning
+- AWS infrastructure for podcast hosting with CloudFront CDN
+
+## Key Directories
+- `src/file_downloader/` - Discord API integration, voice memo downloads
+- `src/mixer/` - Audio processing, pydub-based mixing pipeline
+- `src/publish-podcast-to-dropbox/` - Dropbox publishing with versioned naming
+- `src/utils/` - Shared logging and utility functions
+- `infra/terraform/` - AWS infrastructure as code (S3, CloudFront, Route53)
+- `tests/` - Unit tests (fast) and e2e tests (Docker-based)
+- `data/` - Runtime directories (voice-memos, background-music, podcast)
+
+## Primary Constraints
+- Python 3.13+ with uv package management
+- Docker Compose for service orchestration
+- Sequential pipeline: download → mix → publish
+- Audio formats: mp3, wav, m4a, ogg
+- Max voice memo length: 3m 5s
+- Systemd integration for production deployment
+- Environment-based configuration (.env files)
+- AWS multi-environment support (staging/prod)
+
+## Architecture Pattern
+Microservices pipeline with Docker volumes for data flow between services.
+Each service is stateless and communicates via shared filesystem.

@@ -1,0 +1,43 @@
+---
+description: Writing tests
+globs: 
+alwaysApply: false
+---
+# Testing Patterns
+
+@context {
+    "type": "testing",
+    "framework": "pytest",
+    "async_support": "pytest-asyncio"
+}
+
+## Test Structure
+- @tests/unit/ - Fast unit tests (~30 seconds, 19 tests)
+- @tests/e2e/ - End-to-end pipeline tests (~50 seconds, 3 tests)
+- @tests/cache/ - Cached test audio files (gitignored)
+- @tests/fixtures/ - Test audio URLs and sample data
+
+@test_categories {
+    "unit": "Individual component testing",
+    "e2e": "Full Docker pipeline validation", 
+    "integration": "Service interaction testing"
+}
+
+## E2E Test Flow
+1. Download test audio from URLs (cached locally)
+2. Run complete pipeline in Docker containers
+3. Verify file processing and publishing
+4. Validate output format and naming
+
+@github_actions [
+    "test.yml - Fast unit tests on every PR/merge",
+    "e2e-tests.yml - Full pipeline tests", 
+    "lint.yml - Ruff code linting",
+    "typecheck.yml - Pyright type checking"
+]
+
+## Test Configuration
+- @.env.test - Test environment variables
+- @docker-compose.test.yml - Test volume mounts
+- Parallel execution for fast feedback
+- Comprehensive coverage of all pipeline stages

@@ -1,0 +1,35 @@
+---
+description: 
+globs: src/mixer/**
+alwaysApply: false
+---
+# Audio Processing Rules
+
+@context {
+    "type": "processing",
+    "library": "pydub",
+    "output_format": "mp3"
+}
+
+## Processing Pipeline
+1. Load & normalize voice memos together (consistent levels)
+2. Build voice track with intro/outro gaps
+3. Overlay background music at dynamic volumes
+4. Apply crossfades and professional effects
+
+## File Organization
+- Input: @data/voice-memos/ (timestamped files from Discord)
+- Music: @data/background-music/ (shuffled and looped as needed)
+- Output: @data/podcast/voice_memo_mix.mp3
+
+@quality_features [
+    "Batch normalization across all voice memos",
+    "Dynamic music volume (background vs featured)",
+    "Crossfades between voice segments", 
+    "Professional fade-in/fade-out effects"
+]
+
+## Error Handling
+- NoVoiceMemosFoundError, NoBackgroundMusicFoundError
+- Audio format validation
+- Memory-efficient processing for large files
