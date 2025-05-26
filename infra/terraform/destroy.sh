@@ -4,6 +4,8 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [staging|prod]"
@@ -22,7 +24,7 @@ if [ $# -eq 0 ]; then
 fi
 
 ENVIRONMENT="$1"
-TFVARS_FILE="environments/${ENVIRONMENT}.tfvars"
+TFVARS_FILE="$SCRIPT_DIR/environments/${ENVIRONMENT}.tfvars"
 
 # Validate environment
 if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
@@ -41,7 +43,7 @@ if [ ! -f "$TFVARS_FILE" ]; then
 fi
 
 echo "🔧 Initializing Terraform for ${ENVIRONMENT}..."
-terraform init
+terraform init "$SCRIPT_DIR"
 
 echo "🏗️  Selecting ${ENVIRONMENT} workspace..."
 terraform workspace select ${ENVIRONMENT} 2>/dev/null || {

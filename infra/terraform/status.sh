@@ -4,6 +4,8 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Function to show usage
 show_usage() {
     echo "Usage: $0 [staging|prod|all]"
@@ -19,7 +21,7 @@ show_usage() {
 # Function to show environment status
 show_env_status() {
     local env="$1"
-    local tfvars_file="environments/${env}.tfvars"
+    local tfvars_file="$SCRIPT_DIR/environments/${env}.tfvars"
 
     echo "📊 ${env^^} Environment Status:"
     echo "================================"
@@ -63,7 +65,7 @@ fi
 ENVIRONMENT="$1"
 
 echo "🔧 Initializing Terraform..."
-terraform init >/dev/null
+terraform init "$SCRIPT_DIR" >/dev/null
 
 if [ "$ENVIRONMENT" = "all" ]; then
     show_env_status "staging"
