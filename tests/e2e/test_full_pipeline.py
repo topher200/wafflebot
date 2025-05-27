@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
 
+import pytest
+
 from tests.e2e.utils.docker_helpers import (
     DockerComposeTestManager,
     wait_for_service_completion,
@@ -14,6 +16,23 @@ from tests.e2e.utils.minio_helpers import MinIOTestClient
 
 logger = logging.getLogger(__name__)
 
+@pytest.fixture
+def dummy_podcast_file(docker_manager: DockerComposeTestManager):
+    """
+    This fixture creates a dummy podcast file directly in the podcast volume for
+    upload tests.
+    """
+    full_volume_name = "wafflebot_test-podcast-audio"
+    result = subprocess.run([
+        "docker", "run", "--rm", "--platform", "linux/amd64",
+        "-v", f"{full_volume_name}:/data",
+        "alpine", "sh", "-c",
+        "echo 'dummy audio content for testing' > /data/voice_memo_mix.mp3"
+    ], capture_output=True, text=True)
+    assert result.returncode == 0, (
+        f"Failed to create dummy podcast file: {result.stderr}"
+    )
+    yield "/data/voice_memo_mix.mp3"
 
 class TestFullPipeline:
     """Test the complete audio processing pipeline."""
@@ -74,45 +93,19 @@ class TestFullPipeline:
 
         logger.info("Audio mixer test completed successfully")
 
-    def _create_dummy_podcast_file(
-        self, docker_manager: DockerComposeTestManager
-    ) -> bool:
-        """
-        Create a dummy podcast file directly in the podcast volume for upload tests.
-        """
-        try:
-            full_volume_name = "wafflebot_test-podcast-audio"
-            result = subprocess.run([
-                "docker", "run", "--rm", "--platform", "linux/amd64",
-                "-v", f"{full_volume_name}:/data",
-                "alpine", "sh", "-c",
-                "echo 'dummy audio content for testing' > /data/voice_memo_mix.mp3"
-            ], capture_output=True, text=True)
-            if result.returncode != 0:
-                logger.error(
-                    f"Failed to create dummy file: {result.stderr}"
-                )
-                return False
-            logger.info("Created dummy podcast file for upload test")
-            return True
-        except Exception as e:
-            logger.error(f"Error creating dummy podcast file: {e}")
-            return False
-
     def test_publish_to_dropbox_creates_versioned_file(
         self,
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
         temp_output_dir: Path,
+        dummy_podcast_file,
     ):
         """
-        Test that the publish script creates properly versioned files using dummy audio.
+        This test verifies that the publish script creates properly versioned files
+        using a dummy audio file.
         """
         logger.info(
             "Testing publish-to-dropbox with versioned naming (using dummy file)..."
-        )
-        assert self._create_dummy_podcast_file(docker_manager), (
-            "Failed to create dummy podcast file"
         )
         assert docker_manager.build_services([
             "publish-to-dropbox"
@@ -151,14 +144,9 @@ class TestFullPipeline:
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
         minio_client: MinIOTestClient,
+        dummy_podcast_file,
     ):
-        """ Test that the publish-podcast-to-s3 service uploads files to MinIO.  """
-        logger.info(
-            "Testing publish-podcast-to-s3 with MinIO (using dummy file)..."
-        )
-        assert self._create_dummy_podcast_file(docker_manager), (
-            "Failed to create dummy podcast file"
-        )
+        logger.info("Testing publish-podcast-to-s3 with MinIO (using dummy file)...")
         assert docker_manager.build_services([
             "publish-podcast-to-s3"
         ]), "Failed to build publish-podcast-to-s3 service"
