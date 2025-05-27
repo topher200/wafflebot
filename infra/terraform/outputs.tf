@@ -23,11 +23,6 @@ output "custom_domain_url" {
   value       = "https://${var.domain_name}"
 }
 
-output "rss_feed_url" {
-  description = "RSS feed URL"
-  value       = "https://${var.domain_name}/rss"
-}
-
 output "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
   value       = aws_acm_certificate.podcast.arn
