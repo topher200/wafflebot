@@ -33,7 +33,7 @@ def test_input_file_validation():
             cwd=temp_dir,
             env=env,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         assert result.returncode != 0, "Script should fail when input file is missing"
@@ -51,13 +51,13 @@ def test_environment_variable_validation():
         ["bash", "src/publish-podcast-to-s3/publish.sh"],
         env={},  # Empty environment
         capture_output=True,
-        text=True
+        text=True,
     )
 
     assert result.returncode != 0, "Script should fail when S3_BUCKET_NAME is missing"
 
 
-@patch('subprocess.run')
+@patch("subprocess.run")
 def test_timestamp_format(mock_run):
     """Test that the timestamp format is correct."""
     import re
@@ -67,7 +67,7 @@ def test_timestamp_format(mock_run):
     mock_run.return_value = MagicMock(returncode=0)
 
     # The timestamp should match ISO 8601 format: YYYY-MM-DDTHHMMSS
-    timestamp_pattern = r'^\d{4}-\d{2}-\d{2}T\d{6}\.mp3$'
+    timestamp_pattern = r"^\d{4}-\d{2}-\d{2}T\d{6}\.mp3$"
 
     # Generate a timestamp like the script does
     timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H%M%S")

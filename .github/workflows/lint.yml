@@ -11,5 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python-setup
-      - name: Run Ruff
+      - name: Run Ruff Lint
         run: uv run ruff check .
+      - name: Run Ruff Format Check
+        run: uv run ruff format --check .

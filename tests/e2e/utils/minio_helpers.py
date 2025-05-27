@@ -46,35 +46,39 @@ class MinIOTestClient:
 
     def _run_aws_cli_in_container(self, args: List[str]) -> subprocess.CompletedProcess:
         docker_cmd = [
-            "docker", "run", "--rm",
+            "docker",
+            "run",
+            "--rm",
             "--network=wafflebot_default",
-            "-e", f"AWS_ACCESS_KEY_ID={self.access_key}",
-            "-e", f"AWS_SECRET_ACCESS_KEY={self.secret_key}",
-            "-e", "AWS_DEFAULT_REGION=us-east-1",
-            "amazon/aws-cli:2.13.14"
+            "-e",
+            f"AWS_ACCESS_KEY_ID={self.access_key}",
+            "-e",
+            f"AWS_SECRET_ACCESS_KEY={self.secret_key}",
+            "-e",
+            "AWS_DEFAULT_REGION=us-east-1",
+            "amazon/aws-cli:2.13.14",
         ] + args
-        return subprocess.run(
-            docker_cmd,
-            capture_output=True,
-            text=True
-        )
+        return subprocess.run(docker_cmd, capture_output=True, text=True)
 
     def list_bucket_objects(self, bucket_name: str, prefix: str = "") -> List[str]:
         """List objects in a bucket using AWS CLI (in a container)."""
         try:
             cmd = [
-                "s3", "ls", f"s3://{bucket_name}/{prefix}",
-                "--endpoint-url", self.container_endpoint,
-                "--recursive"
+                "s3",
+                "ls",
+                f"s3://{bucket_name}/{prefix}",
+                "--endpoint-url",
+                self.container_endpoint,
+                "--recursive",
             ]
             result = self._run_aws_cli_in_container(cmd)
             if result.returncode == 0:
                 objects = []
-                for line in result.stdout.strip().split('\n'):
+                for line in result.stdout.strip().split("\n"):
                     if line.strip():
                         parts = line.split()
                         if len(parts) >= 4:
-                            objects.append(' '.join(parts[3:]))
+                            objects.append(" ".join(parts[3:]))
                 return objects
             else:
                 logger.error(f"Failed to list objects: {result.stderr}")
@@ -87,8 +91,11 @@ class MinIOTestClient:
         """Check if an object exists in the bucket (in a container)."""
         try:
             cmd = [
-                "s3", "ls", f"s3://{bucket_name}/{object_key}",
-                "--endpoint-url", self.container_endpoint
+                "s3",
+                "ls",
+                f"s3://{bucket_name}/{object_key}",
+                "--endpoint-url",
+                self.container_endpoint,
             ]
             result = self._run_aws_cli_in_container(cmd)
             return result.returncode == 0 and object_key in result.stdout
@@ -102,14 +109,19 @@ class MinIOTestClient:
         """Get information about an object (in a container)."""
         try:
             cmd = [
-                "s3api", "head-object",
-                "--bucket", bucket_name,
-                "--key", object_key,
-                "--endpoint-url", self.container_endpoint
+                "s3api",
+                "head-object",
+                "--bucket",
+                bucket_name,
+                "--key",
+                object_key,
+                "--endpoint-url",
+                self.container_endpoint,
             ]
             result = self._run_aws_cli_in_container(cmd)
             if result.returncode == 0:
                 import json
+
                 return json.loads(result.stdout)
             else:
                 logger.error(f"Failed to get object info: {result.stderr}")
