@@ -9,6 +9,7 @@ from tests.e2e.utils.docker_helpers import (
     DockerComposeTestManager,
     wait_for_service_completion,
 )
+from tests.e2e.utils.minio_helpers import MinIOTestClient
 
 logger = logging.getLogger(__name__)
 
@@ -124,11 +125,62 @@ class TestFullPipeline:
 
         logger.info("Publish script test completed successfully")
 
+    def test_publish_to_s3_uploads_to_minio(
+        self,
+        test_audio_files: List[Dict[str, Any]],
+        test_background_music: List[Dict[str, Any]],
+        docker_manager: DockerComposeTestManager,
+        clean_docker_environment,
+        minio_client: MinIOTestClient,
+    ):
+        """Test that the publish-podcast-to-s3 service uploads files to MinIO."""
+        logger.info("Testing publish-podcast-to-s3 with MinIO...")
+
+        # First run audio mixer to create input for publish script
+        assert docker_manager.build_services(
+            ["audio-mixer"]
+        ), "Failed to build audio-mixer service"
+
+        mixer_result = docker_manager.run_service("audio-mixer")
+        assert (
+            mixer_result.returncode == 0
+        ), f"Audio mixer failed: {mixer_result.stderr}"
+
+        # Now build and run the S3 publish service
+        assert docker_manager.build_services(
+            ["publish-podcast-to-s3"]
+        ), "Failed to build publish-podcast-to-s3 service"
+
+        publish_result = docker_manager.run_service("publish-podcast-to-s3")
+        if publish_result.returncode != 0:
+            logger.error(f"S3 publish STDOUT: {publish_result.stdout}")
+            logger.error(f"S3 publish STDERR: {publish_result.stderr}")
+        assert (
+            publish_result.returncode == 0
+        ), f"S3 publish script failed: {publish_result.stderr}"
+
+        # Verify that a file was uploaded to MinIO
+        bucket_name = "test-podcast-bucket"
+        objects = minio_client.list_bucket_objects(bucket_name, "podcasts/")
+        assert len(objects) > 0, "No objects found in MinIO bucket"
+
+        # Check that at least one file matches the expected ISO 8601 naming pattern
+        iso_pattern = re.compile(r"podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3")
+        timestamped_files = [obj for obj in objects if iso_pattern.search(obj)]
+        assert (
+            len(timestamped_files) > 0
+        ), f"No properly timestamped files found. Objects: {objects}"
+
+        logger.info(
+            f"S3 publish test completed successfully. Uploaded: {timestamped_files[0]}"
+        )
+
     def test_complete_pipeline_end_to_end(
         self,
         test_audio_files: List[Dict[str, Any]],
         test_background_music: List[Dict[str, Any]],
         docker_manager: DockerComposeTestManager,
+        minio_client: MinIOTestClient,
         clean_docker_environment,
     ):
         """Test the complete pipeline from audio files to published output."""
@@ -164,14 +216,20 @@ class TestFullPipeline:
         ]
         assert len(mixed_files) > 0, "Mixed audio file not created by audio mixer"
 
-        # Step 2: Run publish script
-        logger.info("Step 2: Running publish script...")
-        publish_success = wait_for_service_completion(
+        # Step 2: Run both publish services
+        logger.info("Step 2: Running Dropbox publish...")
+        dropbox_success = wait_for_service_completion(
             docker_manager, "publish-to-dropbox"
         )
-        assert publish_success, "Publish script step failed"
+        assert dropbox_success, "Dropbox publish step failed"
 
-        # Verify final output exists
+        logger.info("Step 3: Running S3 publish...")
+        s3_success = wait_for_service_completion(
+            docker_manager, "publish-podcast-to-s3"
+        )
+        assert s3_success, "S3 publish step failed"
+
+        # Verify Dropbox output
         dropbox_volume_contents = docker_manager.get_volume_contents(
             "test-dropbox-output", "/data"
         )
@@ -179,17 +237,30 @@ class TestFullPipeline:
             dropbox_volume_contents is not None
         ), "Could not inspect dropbox output volume"
 
-        published_files = [
+        dropbox_files = [
             line for line in dropbox_volume_contents if line.endswith(".mp3")
         ]
-        assert len(published_files) > 0, "No published files found in final output"
+        assert len(dropbox_files) > 0, "No files found in Dropbox output"
 
-        # Verify the published file has the correct naming pattern
-        version_pattern = re.compile(r"\d{4}-\w+ \d{1,2}, \d{4}\.mp3")
-        versioned_files = [f for f in published_files if version_pattern.search(f)]
+        # Verify S3 output
+        bucket_name = "test-podcast-bucket"
+        s3_objects = minio_client.list_bucket_objects(bucket_name, "podcasts/")
+        assert len(s3_objects) > 0, "No objects found in S3 bucket"
+
+        # Verify naming patterns
+        dropbox_pattern = re.compile(r"\d{4}-\w+ \d{1,2}, \d{4}\.mp3")
+        s3_pattern = re.compile(r"podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3")
+
+        dropbox_versioned = [f for f in dropbox_files if dropbox_pattern.search(f)]
+        s3_timestamped = [obj for obj in s3_objects if s3_pattern.search(obj)]
+
         assert (
-            len(versioned_files) > 0
-        ), f"Published file doesn't match expected pattern. Files: {published_files}"
+            len(dropbox_versioned) > 0
+        ), f"No properly versioned Dropbox files. Files: {dropbox_files}"
+        assert (
+            len(s3_timestamped) > 0
+        ), f"No properly timestamped S3 files. Objects: {s3_objects}"
 
-        logger.info("Complete end-to-end pipeline test completed successfully!")
-        logger.info(f"Final published files: {versioned_files}")
+        logger.info("Complete dual-publishing pipeline test completed successfully!")
+        logger.info(f"Dropbox files: {dropbox_versioned}")
+        logger.info(f"S3 objects: {s3_timestamped}")

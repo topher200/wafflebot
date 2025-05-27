@@ -9,6 +9,7 @@ import pytest
 
 from tests.e2e.utils.audio_downloader import download_and_cache_audio, verify_audio_file
 from tests.e2e.utils.docker_helpers import DockerComposeTestManager
+from tests.e2e.utils.minio_helpers import MinIOTestClient
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +124,23 @@ def clean_docker_environment(docker_manager: DockerComposeTestManager):
 
     # Clean up after test
     docker_manager.cleanup_test_environment()
+
+
+@pytest.fixture(scope="function")
+def minio_client(docker_manager: DockerComposeTestManager) -> MinIOTestClient:
+    """Provide a MinIO test client and ensure MinIO is running."""
+    # Start MinIO service
+    logger.info("Starting MinIO service...")
+    result = docker_manager._run_compose_command(["up", "-d", "minio"])
+    if result.returncode != 0:
+        pytest.fail(f"Failed to start MinIO: {result.stderr}")
+
+    # Create client and wait for MinIO to be ready
+    client = MinIOTestClient()
+    if not client.wait_for_minio_ready():
+        pytest.fail("MinIO failed to become ready")
+
+    return client
 
 
 @pytest.fixture(scope="session", autouse=True)

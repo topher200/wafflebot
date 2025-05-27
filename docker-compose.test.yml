@@ -12,6 +12,31 @@ services:
       - test-podcast-audio:/app/data/podcast:ro
       - test-dropbox-output:/app/dropbox-output
 
+  publish-podcast-to-s3:
+    volumes:
+      - ./tests/.env.test:/app/.env:ro
+      - test-podcast-audio:/app/data/podcast:ro
+    depends_on:
+      - minio
+
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    environment:
+      MINIO_ROOT_USER: testuser
+      MINIO_ROOT_PASSWORD: testpassword
+    command: server /data --console-address ":9001"
+    volumes:
+      - test-minio-data:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 1s
+      timeout: 30s
+      retries: 30
+
 volumes:
   test-podcast-audio:
-  test-dropbox-output: 
+  test-dropbox-output:
+  test-minio-data:
