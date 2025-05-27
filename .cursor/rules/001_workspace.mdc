@@ -43,3 +43,8 @@ alwaysApply: true
 ## Architecture Pattern
 Microservices pipeline with Docker volumes for data flow between services.
 Each service is stateless and communicates via shared filesystem.
+
+## Commands to use
+Linting: `$ uv run ruff check --fix .`
+Testing (fast unit tests): `$ uv run pytest tests/unit`
+Testing (slow e2e tests, run sparingly): `$ uv run pytest -v tests/e2e/test_full_pipeline.py`
