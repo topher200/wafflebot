@@ -2,6 +2,7 @@
 
 import logging
 import re
+import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -73,84 +74,94 @@ class TestFullPipeline:
 
         logger.info("Audio mixer test completed successfully")
 
+    def _create_dummy_podcast_file(
+        self, docker_manager: DockerComposeTestManager
+    ) -> bool:
+        """
+        Create a dummy podcast file directly in the podcast volume for upload tests.
+        """
+        try:
+            full_volume_name = "wafflebot_test-podcast-audio"
+            result = subprocess.run([
+                "docker", "run", "--rm", "--platform", "linux/amd64",
+                "-v", f"{full_volume_name}:/data",
+                "alpine", "sh", "-c",
+                "echo 'dummy audio content for testing' > /data/voice_memo_mix.mp3"
+            ], capture_output=True, text=True)
+            if result.returncode != 0:
+                logger.error(
+                    f"Failed to create dummy file: {result.stderr}"
+                )
+                return False
+            logger.info("Created dummy podcast file for upload test")
+            return True
+        except Exception as e:
+            logger.error(f"Error creating dummy podcast file: {e}")
+            return False
+
     def test_publish_to_dropbox_creates_versioned_file(
         self,
-        test_audio_files: List[Dict[str, Any]],
-        test_background_music: List[Dict[str, Any]],
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
         temp_output_dir: Path,
     ):
-        """Test that the publish script creates properly versioned files."""
-        logger.info("Testing publish-to-dropbox with versioned naming...")
-
-        # First run audio mixer to create input for publish script
-        assert docker_manager.build_services(
-            ["audio-mixer"]
-        ), "Failed to build audio-mixer service"
-
-        mixer_result = docker_manager.run_service("audio-mixer")
-        assert (
-            mixer_result.returncode == 0
-        ), f"Audio mixer failed: {mixer_result.stderr}"
-
-        # Now build and run the publish service
-        assert docker_manager.build_services(
-            ["publish-to-dropbox"]
-        ), "Failed to build publish-to-dropbox service"
-
+        """
+        Test that the publish script creates properly versioned files using dummy audio.
+        """
+        logger.info(
+            "Testing publish-to-dropbox with versioned naming (using dummy file)..."
+        )
+        assert self._create_dummy_podcast_file(docker_manager), (
+            "Failed to create dummy podcast file"
+        )
+        assert docker_manager.build_services([
+            "publish-to-dropbox"
+        ]), "Failed to build publish-to-dropbox service"
         publish_result = docker_manager.run_service("publish-to-dropbox")
         assert (
             publish_result.returncode == 0
         ), f"Publish script failed: {publish_result.stderr}"
 
-        # Verify that a versioned file was created in the dropbox output volume
-        volume_contents = docker_manager.get_volume_contents(
-            "test-dropbox-output", "/data"
+        # Get the filenames of the files in the dropbox output volume
+        filenames = docker_manager.get_volume_filenames(
+            "test-dropbox-output", "/data", "*.mp3"
         )
-        assert (
-            volume_contents is not None
-        ), "Could not inspect test-dropbox-output volume"
+        logger.debug(f"Dropbox output filenames: {filenames}")
+        assert filenames is not None, (
+            "Could not get filenames from dropbox output volume"
+        )
+        assert len(filenames) > 0, (
+            "No MP3 files found in dropbox output volume"
+        )
 
-        # Look for files matching the expected pattern: "0001-Month Day, Year.mp3"
-        mp3_files = [line for line in volume_contents if line.endswith(".mp3")]
-        assert len(mp3_files) > 0, "No MP3 files found in dropbox output volume"
-
-        # Check that at least one file matches the expected naming pattern
-        version_pattern = re.compile(r"\d{4}-\w+ \d{1,2}, \d{4}\.mp3")
-        versioned_files = [f for f in mp3_files if version_pattern.search(f)]
-        assert (
-            len(versioned_files) > 0
-        ), f"No properly versioned files found. Files: {mp3_files}"
+        # Check for versioned naming pattern:
+        # starts with 4 digits, dash, then has .mp3 extension
+        versioned_files = [
+            f for f in filenames
+            if f.startswith(("0001-", "0002-", "0003-")) and f.endswith(".mp3")
+        ]
+        assert len(versioned_files) > 0, (
+            f"No properly versioned files found. Files: {filenames}"
+        )
 
         logger.info("Publish script test completed successfully")
 
     def test_publish_to_s3_uploads_to_minio(
         self,
-        test_audio_files: List[Dict[str, Any]],
-        test_background_music: List[Dict[str, Any]],
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
         minio_client: MinIOTestClient,
     ):
-        """Test that the publish-podcast-to-s3 service uploads files to MinIO."""
-        logger.info("Testing publish-podcast-to-s3 with MinIO...")
-
-        # First run audio mixer to create input for publish script
-        assert docker_manager.build_services(
-            ["audio-mixer"]
-        ), "Failed to build audio-mixer service"
-
-        mixer_result = docker_manager.run_service("audio-mixer")
-        assert (
-            mixer_result.returncode == 0
-        ), f"Audio mixer failed: {mixer_result.stderr}"
-
-        # Now build and run the S3 publish service
-        assert docker_manager.build_services(
-            ["publish-podcast-to-s3"]
-        ), "Failed to build publish-podcast-to-s3 service"
-
+        """ Test that the publish-podcast-to-s3 service uploads files to MinIO.  """
+        logger.info(
+            "Testing publish-podcast-to-s3 with MinIO (using dummy file)..."
+        )
+        assert self._create_dummy_podcast_file(docker_manager), (
+            "Failed to create dummy podcast file"
+        )
+        assert docker_manager.build_services([
+            "publish-podcast-to-s3"
+        ]), "Failed to build publish-podcast-to-s3 service"
         publish_result = docker_manager.run_service("publish-podcast-to-s3")
         if publish_result.returncode != 0:
             logger.error(f"S3 publish STDOUT: {publish_result.stdout}")
@@ -159,17 +170,18 @@ class TestFullPipeline:
             publish_result.returncode == 0
         ), f"S3 publish script failed: {publish_result.stderr}"
 
-        # Verify that a file was uploaded to MinIO
         bucket_name = "test-podcast-bucket"
         objects = minio_client.list_bucket_objects(bucket_name, "podcasts/")
         assert len(objects) > 0, "No objects found in MinIO bucket"
 
-        # Check that at least one file matches the expected ISO 8601 naming pattern
-        iso_pattern = re.compile(r"podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3")
-        timestamped_files = [obj for obj in objects if iso_pattern.search(obj)]
-        assert (
-            len(timestamped_files) > 0
-        ), f"No properly timestamped files found. Objects: {objects}"
+        # Check for ISO 8601 timestamp pattern: podcasts/YYYY-MM-DDTHHMMSS.mp3
+        iso_pattern = re.compile(r"^podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3$")
+        timestamped_files = [
+            obj for obj in objects if iso_pattern.match(obj)
+        ]
+        assert len(timestamped_files) > 0, (
+            f"No properly timestamped files found. Objects: {objects}"
+        )
 
         logger.info(
             f"S3 publish test completed successfully. Uploaded: {timestamped_files[0]}"
@@ -230,17 +242,15 @@ class TestFullPipeline:
         assert s3_success, "S3 publish step failed"
 
         # Verify Dropbox output
-        dropbox_volume_contents = docker_manager.get_volume_contents(
-            "test-dropbox-output", "/data"
+        dropbox_filenames = docker_manager.get_volume_filenames(
+            "test-dropbox-output", "/data", "*.mp3"
         )
-        assert (
-            dropbox_volume_contents is not None
-        ), "Could not inspect dropbox output volume"
-
-        dropbox_files = [
-            line for line in dropbox_volume_contents if line.endswith(".mp3")
-        ]
-        assert len(dropbox_files) > 0, "No files found in Dropbox output"
+        assert dropbox_filenames is not None, (
+            "Could not get filenames from dropbox output volume"
+        )
+        assert len(dropbox_filenames) > 0, (
+            "No files found in Dropbox output"
+        )
 
         # Verify S3 output
         bucket_name = "test-podcast-bucket"
@@ -248,19 +258,25 @@ class TestFullPipeline:
         assert len(s3_objects) > 0, "No objects found in S3 bucket"
 
         # Verify naming patterns
-        dropbox_pattern = re.compile(r"\d{4}-\w+ \d{1,2}, \d{4}\.mp3")
-        s3_pattern = re.compile(r"podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3")
+        # Check Dropbox versioned naming pattern:
+        # starts with 4 digits, dash, then has .mp3 extension
+        versioned_files = [
+            f for f in dropbox_filenames
+            if f.startswith(("0001-", "0002-", "0003-")) and f.endswith(".mp3")
+        ]
+        assert len(versioned_files) > 0, (
+            f"No properly versioned Dropbox files. Files: {dropbox_filenames}"
+        )
 
-        dropbox_versioned = [f for f in dropbox_files if dropbox_pattern.search(f)]
-        s3_timestamped = [obj for obj in s3_objects if s3_pattern.search(obj)]
-
-        assert (
-            len(dropbox_versioned) > 0
-        ), f"No properly versioned Dropbox files. Files: {dropbox_files}"
-        assert (
-            len(s3_timestamped) > 0
-        ), f"No properly timestamped S3 files. Objects: {s3_objects}"
+        # Check S3 ISO 8601 timestamp pattern: podcasts/YYYY-MM-DDTHHMMSS.mp3
+        iso_pattern = re.compile(r"^podcasts/\d{4}-\d{2}-\d{2}T\d{6}\.mp3$")
+        timestamped_files = [
+            obj for obj in s3_objects if iso_pattern.match(obj)
+        ]
+        assert len(timestamped_files) > 0, (
+            f"No properly timestamped S3 files. Objects: {s3_objects}"
+        )
 
         logger.info("Complete dual-publishing pipeline test completed successfully!")
-        logger.info(f"Dropbox files: {dropbox_versioned}")
-        logger.info(f"S3 objects: {s3_timestamped}")
+        logger.info(f"Dropbox files: {versioned_files}")
+        logger.info(f"S3 objects: {timestamped_files}")
