@@ -18,7 +18,7 @@ class DockerComposeTestManager:
 
     def _run_compose_command(
         self, command: List[str], capture_output: bool = True
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         """Run a docker compose command with the test configuration."""
         full_command = [
             "docker",
@@ -53,7 +53,7 @@ class DockerComposeTestManager:
 
     def run_service(
         self, service_name: str, remove: bool = True
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         """Run a specific service in the test environment."""
         command = ["run"]
         if remove:
@@ -168,6 +168,49 @@ class DockerComposeTestManager:
         except Exception as e:
             logger.error(f"Error copying from volume {volume_name}: {e}")
             return False
+
+    def get_volume_filenames(
+        self, volume_name: str, path: str = "/data", pattern: str = "*"
+    ) -> Optional[List[str]]:
+        """Get just filenames from a Docker volume."""
+        try:
+            # Docker Compose prefixes volume names with project name
+            full_volume_name = f"wafflebot_{volume_name}"
+
+            # Use find to get just filenames, much simpler than parsing ls -la
+            result = subprocess.run(
+                [
+                    "docker",
+                    "run",
+                    "--rm",
+                    "--platform",
+                    "linux/amd64",
+                    "-v",
+                    f"{full_volume_name}:/data",
+                    "alpine",
+                    "sh",
+                    "-c",
+                    f"find {path} -name '{pattern}' -type f -exec basename {{}} \\;",
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            if result.returncode == 0:
+                filenames = [
+                    f.strip() for f in result.stdout.strip().split("\n") if f.strip()
+                ]
+                return filenames
+            else:
+                logger.error(
+                    f"Failed to get filenames from volume {full_volume_name}: "
+                    f"{result.stderr}"
+                )
+                return None
+
+        except Exception as e:
+            logger.error(f"Error getting filenames from volume {volume_name}: {e}")
+            return None
 
 
 def wait_for_service_completion(
