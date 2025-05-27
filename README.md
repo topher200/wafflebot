@@ -90,6 +90,30 @@ For detailed infrastructure documentation, see [`infra/terraform/README.md`](inf
    uv run pytest tests/ -v
    ```
 
+## Lefthook Pre-commit Hooks
+
+This project uses [lefthook](https://github.com/evilmartians/lefthook) to run automated checks on Python files before each commit.
+
+To set up lefthook:
+
+1. Install lefthook (choose one method):
+
+   ```bash
+   npm install -g @arkweid/lefthook
+   # or
+   brew install lefthook
+   # or
+   go install github.com/evilmartians/lefthook@latest
+   ```
+
+2. Install the git hooks:
+
+   ```bash
+   lefthook install
+   ```
+
+After setup, every commit will automatically lint and format staged Python files using ruff.
+
 ## Deployment
 
 WaffleBot can be deployed as a daily automated service using Docker Compose and systemd.
