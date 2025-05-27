@@ -26,12 +26,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --group dev
 
-      - name: Create test environment file
-        run: |
-          echo "# Test environment for CI" > tests/.env.test
-          echo "TEST_MODE=true" >> tests/.env.test
-          echo "CI=true" >> tests/.env.test
-
       - name: Run E2E tests
         run: uv run pytest tests/e2e/ -v --tb=short
 

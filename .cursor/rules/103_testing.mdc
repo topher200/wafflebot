@@ -37,7 +37,7 @@ alwaysApply: false
 ]
 
 ## Test Configuration
-- @.env.test - Test environment variables
+- @tests/.env.test - Test environment variables
 - @docker-compose.test.yml - Test volume mounts
 - Parallel execution for fast feedback
 - Comprehensive coverage of all pipeline stages
