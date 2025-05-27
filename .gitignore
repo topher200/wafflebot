@@ -3,7 +3,6 @@ __pycache__/
 *.pyo
 *.pyd
 .env
-!tests/.env.test*
 .DS_Store
 .vscode/
 .idea/
