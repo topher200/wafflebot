@@ -1,21 +1,22 @@
 services:
   audio-mixer:
+    user: root
     volumes:
       - ./tests/.env.test:/app/.env:ro
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
       - ./tests/cache/background-music:/app/data/background-music:ro
-      - test-podcast-audio:/app/data/podcast
+      - ./tests/cache/test-outputs/podcast:/app/data/podcast
 
   publish-to-dropbox:
     user: root
     volumes:
-      - test-podcast-audio:/app/data/podcast:ro
-      - test-dropbox-output:/app/dropbox-output
+      - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
+      - ./tests/cache/test-outputs/dropbox:/app/dropbox-output
 
   publish-podcast-to-s3:
     volumes:
       - ./tests/.env.test:/app/.env:ro
-      - test-podcast-audio:/app/data/podcast:ro
+      - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
     depends_on:
       - minio
 
@@ -37,6 +38,4 @@ services:
       retries: 30
 
 volumes:
-  test-podcast-audio:
-  test-dropbox-output:
   test-minio-data:

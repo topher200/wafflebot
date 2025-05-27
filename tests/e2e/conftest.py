@@ -2,6 +2,7 @@
 
 import json
 import logging
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -158,3 +159,25 @@ def temp_output_dir(tmp_path: Path) -> Path:
     output_dir = tmp_path / "test_output"
     output_dir.mkdir(exist_ok=True)
     return output_dir
+
+
+@pytest.fixture(scope="session")
+def test_outputs_dir(cache_dir: Path) -> Path:
+    """Provide and set up the test outputs directory."""
+    outputs_dir = cache_dir / "test-outputs"
+    (outputs_dir / "podcast").mkdir(parents=True, exist_ok=True)
+    (outputs_dir / "dropbox").mkdir(parents=True, exist_ok=True)
+    logger.info(f"Test outputs will be saved to: {outputs_dir}")
+    return outputs_dir
+
+
+@pytest.fixture(scope="function")
+def clean_test_outputs(test_outputs_dir: Path):
+    """Clean test output directories before each test, but preserve after."""
+    for subdir in ["podcast", "dropbox"]:
+        output_subdir = test_outputs_dir / subdir
+        if output_subdir.exists():
+            shutil.rmtree(output_subdir)
+        output_subdir.mkdir(parents=True, exist_ok=True)
+    yield test_outputs_dir
+    logger.info(f"Test outputs preserved in: {test_outputs_dir}")
