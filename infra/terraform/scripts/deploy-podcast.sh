@@ -5,6 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TERRAFORM_DIR="$SCRIPT_DIR/../podcast"
 
 # Function to show usage
 show_usage() {
@@ -24,7 +25,7 @@ if [ $# -eq 0 ]; then
 fi
 
 ENVIRONMENT="$1"
-TFVARS_FILE="$SCRIPT_DIR/environments/${ENVIRONMENT}.tfvars"
+TFVARS_FILE="$TERRAFORM_DIR/${ENVIRONMENT}.tfvars"
 
 # Validate environment
 if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "prod" ]]; then
@@ -42,11 +43,11 @@ if [ ! -f "$TFVARS_FILE" ]; then
     exit 1
 fi
 
-echo "🔧 Initializing Terraform for ${ENVIRONMENT}..."
-terraform -chdir="$SCRIPT_DIR" init
+echo "🔧 Initializing Terraform..."
+terraform -chdir="$TERRAFORM_DIR" init
 
-echo "🏗️  Selecting/creating ${ENVIRONMENT} workspace..."
-terraform -chdir="$SCRIPT_DIR" workspace select ${ENVIRONMENT} 2>/dev/null || terraform -chdir="$SCRIPT_DIR" workspace new ${ENVIRONMENT}
+echo "🏗️  Selecting/creating podcast-${ENVIRONMENT} workspace..."
+terraform -chdir="$TERRAFORM_DIR" workspace select podcast-${ENVIRONMENT} 2>/dev/null || terraform -chdir="$TERRAFORM_DIR" workspace new podcast-${ENVIRONMENT}
 
 echo ""
 # Add extra warning for production
@@ -55,9 +56,9 @@ if [ "$ENVIRONMENT" = "prod" ]; then
     echo ""
 fi
 
-echo "🚀 Deploying ${ENVIRONMENT}..."
-terraform -chdir="$SCRIPT_DIR" apply -var-file="$TFVARS_FILE"
+echo "🚀 Deploying podcast ${ENVIRONMENT}..."
+terraform -chdir="$TERRAFORM_DIR" apply -var-file="$TFVARS_FILE"
 
 echo ""
-echo "✅ ${ENVIRONMENT^^} deployment complete!"
+echo "✅ Podcast ${ENVIRONMENT^^} deployment complete!"
 echo "⏰ Note: CloudFront deployment can take 10-20 minutes to fully propagate"

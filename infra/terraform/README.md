@@ -1,219 +1,181 @@
-# Podcast Infrastructure
+# WaffleBot Infrastructure
 
-This Terraform configuration creates a secure podcast hosting infrastructure on AWS with:
-
-- **Private S3 bucket** for storing podcast files and RSS feed
-- **CloudFront CDN** for fast, global content delivery
-- **Custom domain** with HTTPS via ACM certificate
-- **Origin Access Control (OAC)** to block direct S3 access
-- **Route53 DNS** configuration
-- **Multi-environment support** (staging and production)
+This directory contains the Terraform infrastructure for WaffleBot, organized into separate root modules for clean isolation.
 
 ## Architecture
 
+The infrastructure uses a **split root architecture** with separate Terraform roots for each environment:
+
+1. **Podcast Root** (`podcast/`) - Deploys podcast infrastructure using the podcast module
+2. **Test Files Root** (`test-files/`) - Deploys test files infrastructure using the test-files module
+
+Each root calls its respective module from the shared `modules/` directory, ensuring code reuse while maintaining environment isolation.
+
+## Directory Structure
+
 ```
-Internet → podcast.yourdomain.com → CloudFront → Private S3 Bucket
+infra/terraform/
+├── modules/                        # Reusable Terraform modules
+│   ├── podcast/                    # Podcast infrastructure module
+│   │   ├── main.tf                 # AWS caller identity
+│   │   ├── variables.tf            # Module variables
+│   │   ├── outputs.tf              # Module outputs
+│   │   ├── s3.tf                   # S3 bucket configuration
+│   │   ├── cloudfront.tf           # CloudFront distribution
+│   │   ├── acm.tf                  # SSL certificate
+│   │   └── dns.tf                  # Route53 DNS records
+│   └── test-files/                 # Test files module
+│       ├── main.tf                 # AWS caller identity
+│       ├── variables.tf            # Module variables
+│       ├── outputs.tf              # Module outputs
+│       └── s3.tf                   # Public S3 bucket
+├── podcast/                        # Podcast deployment root
+│   ├── main.tf                     # Calls ../modules/podcast
+│   ├── variables.tf                # Root variables
+│   ├── outputs.tf                  # Root outputs
+│   ├── provider.tf                 # AWS providers (including us-east-1)
+│   ├── staging.tfvars              # Staging config (gitignored)
+│   ├── prod.tfvars                 # Production config (gitignored)
+│   └── podcast.tfvars.example      # Config template
+├── test-files/                     # Test files deployment root
+│   ├── main.tf                     # Calls ../modules/test-files
+│   ├── variables.tf                # Root variables
+│   ├── outputs.tf                  # Root outputs
+│   ├── provider.tf                 # AWS provider
+│   ├── test-files.tfvars           # Config (gitignored)
+│   └── test-files.tfvars.example   # Config template
+├── scripts/                        # Deployment scripts
+│   ├── deploy-podcast.sh           # Deploy podcast (staging/prod)
+│   ├── deploy-test-files.sh        # Deploy test files
+│   └── deploy-all.sh               # Deploy everything
 ```
 
-- ✅ `https://podcast.yourdomain.com/rss` - Works
-- ✅ `https://podcast.yourdomain.com/episode1.mp3` - Works  
-- ❌ `https://bucket.s3.amazonaws.com/episode1.mp3` - Blocked
+## Setup
 
-## Prerequisites
+### Prerequisites
 
-1. **AWS CLI configured** with appropriate credentials
-2. **Terraform installed** (>= 1.0)
-3. **Domain registered** and hosted zone in Route53
-4. **Route53 hosted zone ID** for your domain
+1. AWS CLI configured with appropriate credentials
+2. Terraform installed (version 1.0+)
+3. `aws-vault` for secure credential management (recommended)
 
-## Environment Configuration
+### Environment Configuration
 
-The infrastructure uses environment-specific configuration files that you create from the example:
+Each deployment root has its own configuration files:
 
-### Setup Environment Files
+#### 1. Create Podcast Environment Files
 
-1. **Create environment configurations from the example:**
-   ```bash
-   # Copy the example to create your environment files
-   cp terraform.tfvars.example environments/staging.tfvars
-   cp terraform.tfvars.example environments/prod.tfvars
-   ```
+```bash
+# Copy example file to create your configurations
+cp podcast/podcast.tfvars.example podcast/staging.tfvars
+cp podcast/podcast.tfvars.example podcast/prod.tfvars
 
-2. **Edit each file with environment-specific values:**
-
-**Staging** (`environments/staging.tfvars`):
-```hcl
-bucket_name = "my-podcast-staging"
-domain_name = "staging-podcast.mydomain.com"
-route53_zone_id = "Z1234567890ABC"
-environment = "staging"
+# Edit with your actual values
+vim podcast/staging.tfvars
+vim podcast/prod.tfvars
 ```
 
-**Production** (`environments/prod.tfvars`):
-```hcl
-bucket_name = "my-podcast-prod"
-domain_name = "podcast.mydomain.com"
-route53_zone_id = "Z1234567890ABC"
-environment = "prod"
+#### 2. Create Test Files Environment File
+
+```bash
+# Copy example file to create your configuration
+cp test-files/test-files.tfvars.example test-files/test-files.tfvars
+
+# Edit with your actual values
+vim test-files/test-files.tfvars
 ```
 
-**Note:** The environment files (`environments/*.tfvars`) are gitignored to keep your credentials safe.
+#### 3. Required Values
+
+You'll need to provide:
+
+- **S3 bucket names**: Must be globally unique
+- **Domain names**: Your actual domain names (podcast only)
+- **Route53 zone ID**: Found in AWS Console under Route53 > Hosted zones (podcast only)
+
+**Note**: The `.tfvars` files are gitignored to keep your configuration private.
 
 ## Deployment
 
-### Deploy to Staging
+### Deploy Podcast Infrastructure
+
 ```bash
-./deploy.sh staging
+# Deploy to staging
+./scripts/deploy-podcast.sh staging
+
+# Deploy to production
+./scripts/deploy-podcast.sh prod
 ```
 
-### Deploy to Production
+### Deploy Test Files Infrastructure
+
 ```bash
-./deploy.sh prod
+# Deploy test files bucket
+./scripts/deploy-test-files.sh
 ```
 
-### Check Environment Status
+### Deploy Everything
+
 ```bash
-./status.sh staging    # Check staging
-./status.sh prod       # Check production
-./status.sh all        # Check both environments
+# Deploy all infrastructure
+./scripts/deploy-all.sh
 ```
 
-### Destroy Environment
-```bash
-./destroy.sh staging   # Destroy staging
-./destroy.sh prod      # Destroy production
-```
+## Modules
 
-## Manual Deployment Steps
+### Podcast Module
 
-If you prefer manual control:
+**Purpose**: Complete podcast hosting infrastructure with custom domain and CDN.
 
-1. **Initialize Terraform:**
-   ```bash
-   terraform init
-   ```
+**Resources**:
 
-2. **Select environment workspace:**
-   ```bash
-   terraform workspace select staging
-   # or
-   terraform workspace new staging
-   ```
+- Private S3 bucket for podcast files
+- CloudFront distribution with custom domain
+- ACM SSL certificate
+- Route53 DNS records
+- Origin Access Control (OAC) for security
 
-3. **Plan deployment:**
-   ```bash
-   terraform plan -var-file="environments/staging.tfvars"
-   ```
+**Environments**: `staging`, `prod`
 
-4. **Apply configuration:**
-   ```bash
-   terraform apply -var-file="environments/staging.tfvars"
-   ```
+**Workspaces**: `podcast-staging`, `podcast-prod`
 
-## Deployment Process
+### Test Files Module
 
-The deployment will:
-1. Create the S3 bucket with private access
-2. Create ACM certificate and validate via DNS
-3. Create CloudFront distribution with OAC
-4. Set up Route53 DNS records
-5. Configure S3 bucket policy to allow only CloudFront
+**Purpose**: Simple public S3 bucket for hosting test files.
 
-**Note:** Certificate validation and CloudFront deployment can take 10-20 minutes.
+**Resources**:
 
-## Usage
+- Public S3 bucket with read access
+- Bucket versioning enabled
+- Public access policy
 
-After deployment:
+**Environments**: Single shared environment
 
-1. **Upload your files to S3:**
-   ```bash
-   # Get bucket name from Terraform output
-   BUCKET=$(terraform output -raw s3_bucket_name)
-   
-   # Upload files
-   aws s3 cp rss s3://$BUCKET/rss
-   aws s3 cp episode1.mp3 s3://$BUCKET/episode1.mp3
-   ```
+**Workspaces**: `test-files`
 
-2. **Your RSS feed should reference your custom domain:**
-   ```xml
-   <enclosure url="https://podcast.yourdomain.com/episode1.mp3" type="audio/mpeg" length="12345678"/>
-   ```
+## Workspaces
 
-3. **Test access:**
-   - ✅ `https://podcast.yourdomain.com/rss`
-   - ✅ `https://podcast.yourdomain.com/episode1.mp3`
+Each deployment root uses Terraform workspaces for environment isolation:
 
-## Environment Separation
-
-| Aspect | Staging | Production |
-|--------|---------|------------|
-| **Domain** | `staging-podcast.domain.com` | `podcast.domain.com` |
-| **S3 Bucket** | `project-staging` | `project-prod` |
-| **Terraform Workspace** | `staging` | `prod` |
-| **State File** | Separate | Separate |
-| **Resources** | Isolated | Isolated |
+- **Podcast root**: `podcast-staging`, `podcast-prod`
+- **Test files root**: `test-files`
 
 ## Outputs
 
-After deployment, Terraform will output:
-- S3 bucket name and ARN
-- CloudFront distribution ID
-- Custom domain URL
-- RSS feed URL
+### Podcast Outputs
 
-## Cache Behavior
+- `s3_bucket_name` - S3 bucket name
+- `cloudfront_distribution_id` - CloudFront distribution ID
+- `custom_domain_url` - Custom domain URL
 
-- **RSS feed** (`rss*`): 5 minutes cache (for quick updates)
-- **Audio files** (`*.mp3`): 1 week cache (for bandwidth efficiency)
-- **Other files**: 1 day cache
+### Test Files Outputs
 
-## Security Features
+- `bucket_name` - S3 bucket name
+- `bucket_domain_name` - S3 bucket domain
+- `bucket_regional_domain_name` - Regional S3 domain
 
-- ✅ S3 bucket is completely private
-- ✅ Only CloudFront can access S3 (via OAC)
-- ✅ HTTPS enforced via CloudFront
-- ✅ TLS 1.2+ minimum
-- ✅ Server-side encryption enabled
-- ✅ Environment isolation
+## Security
 
-## Workflow Examples
-
-### Typical Development Workflow
-
-1. **Test changes in staging:**
-   ```bash
-   ./deploy.sh staging
-   # Test your changes at staging-podcast.domain.com
-   ```
-
-2. **Deploy to production:**
-   ```bash
-   ./deploy.sh prod
-   # Go live at podcast.domain.com
-   ```
-
-### Check what's deployed:
-```bash
-./status.sh all
-```
-
-## Cleanup
-
-To destroy an environment:
-```bash
-./destroy.sh staging  # Remove staging
-./destroy.sh prod     # Remove production
-```
-
-## Troubleshooting
-
-**Certificate validation stuck?**
-
-- Check that your domain's nameservers point to Route53
-- Verify the hosted zone ID is correct
-
-**CloudFront not serving files?**
-
-- Wait 10-15 minutes for distribution to deploy
-- Check S3 bucket policy was applied correctly
+- **Podcast S3 bucket**: Completely private, only accessible via CloudFront
+- **Test files S3 bucket**: Public read access for test file hosting
+- **SSL/TLS**: Enforced with minimum TLS 1.2
+- **Access Control**: Origin Access Control (OAC) for CloudFront → S3

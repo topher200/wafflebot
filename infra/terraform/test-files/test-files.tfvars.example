@@ -1,0 +1,11 @@
+# Copy this file to main.tfvars and fill in your actual values
+# main.tfvars will be gitignored to keep your secrets safe
+
+# AWS region for resources
+aws_region = "us-east-1"
+
+# S3 bucket name for test files - must be globally unique
+test_files_bucket_name = "my-unique-test-files-bucket"
+
+# Project name for resource tagging
+test_files_project_name = "my-project-test-files" 
