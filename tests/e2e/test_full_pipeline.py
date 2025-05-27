@@ -2,7 +2,6 @@
 
 import logging
 import re
-import subprocess
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -17,22 +16,14 @@ from tests.e2e.utils.minio_helpers import MinIOTestClient
 logger = logging.getLogger(__name__)
 
 @pytest.fixture
-def dummy_podcast_file(docker_manager: DockerComposeTestManager):
+def dummy_podcast_file(clean_test_outputs):
+    """Fixture to create a dummy podcast file directly in the local podcast
+    directory for upload tests.
     """
-    This fixture creates a dummy podcast file directly in the podcast volume for
-    upload tests.
-    """
-    full_volume_name = "wafflebot_test-podcast-audio"
-    result = subprocess.run([
-        "docker", "run", "--rm", "--platform", "linux/amd64",
-        "-v", f"{full_volume_name}:/data",
-        "alpine", "sh", "-c",
-        "echo 'dummy audio content for testing' > /data/voice_memo_mix.mp3"
-    ], capture_output=True, text=True)
-    assert result.returncode == 0, (
-        f"Failed to create dummy podcast file: {result.stderr}"
-    )
-    yield "/data/voice_memo_mix.mp3"
+    podcast_dir = clean_test_outputs / "podcast"
+    dummy_file = podcast_dir / "voice_memo_mix.mp3"
+    dummy_file.write_text("dummy audio content for testing")
+    yield dummy_file
 
 class TestFullPipeline:
     """Test the complete audio processing pipeline."""
@@ -43,6 +34,7 @@ class TestFullPipeline:
         test_background_music: List[Dict[str, Any]],
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
+        clean_test_outputs: Path,
     ):
         """Test that the audio mixer can process test audio files successfully."""
         logger.info("Testing audio mixer with test files...")
@@ -75,34 +67,28 @@ class TestFullPipeline:
             logger.error(f"Audio mixer STDERR: {result.stderr}")
         assert result.returncode == 0, f"Audio mixer failed: {result.stderr}"
 
-        # Verify that output was created in the podcast volume
-        volume_contents = docker_manager.get_volume_contents(
-            "test-podcast-audio", "/data"
+        # Verify that output was created in the local podcast directory
+        podcast_dir = clean_test_outputs / "podcast"
+        output_files = list(podcast_dir.glob("voice_memo_mix.mp3"))
+        assert len(output_files) > 0, (
+            f"Expected output file voice_memo_mix.mp3 not found in {podcast_dir}"
         )
-        assert (
-            volume_contents is not None
-        ), "Could not inspect test-podcast-audio volume"
-
-        # Look for the expected output file
-        output_files = [
-            line for line in volume_contents if "voice_memo_mix.mp3" in line
-        ]
-        assert (
-            len(output_files) > 0
-        ), "Expected output file voice_memo_mix.mp3 not found in volume"
-
+        logger.info(
+            f"✅ Generated audio file: {output_files[0]} "
+            f"({output_files[0].stat().st_size} bytes)"
+        )
+        logger.info(f"🎵 You can listen to it with: mpv {output_files[0]}")
         logger.info("Audio mixer test completed successfully")
 
     def test_publish_to_dropbox_creates_versioned_file(
         self,
         docker_manager: DockerComposeTestManager,
         clean_docker_environment,
-        temp_output_dir: Path,
+        clean_test_outputs: Path,
         dummy_podcast_file,
     ):
-        """
-        This test verifies that the publish script creates properly versioned files
-        using a dummy audio file.
+        """Test that the publish script creates properly versioned files
+        using dummy audio.
         """
         logger.info(
             "Testing publish-to-dropbox with versioned naming (using dummy file)..."
@@ -115,28 +101,23 @@ class TestFullPipeline:
             publish_result.returncode == 0
         ), f"Publish script failed: {publish_result.stderr}"
 
-        # Get the filenames of the files in the dropbox output volume
-        filenames = docker_manager.get_volume_filenames(
-            "test-dropbox-output", "/data", "*.mp3"
-        )
-        logger.debug(f"Dropbox output filenames: {filenames}")
-        assert filenames is not None, (
-            "Could not get filenames from dropbox output volume"
-        )
-        assert len(filenames) > 0, (
-            "No MP3 files found in dropbox output volume"
-        )
-
-        # Check for versioned naming pattern:
-        # starts with 4 digits, dash, then has .mp3 extension
+        # Check the local dropbox output directory
+        dropbox_dir = clean_test_outputs / "dropbox"
+        mp3_files = list(dropbox_dir.glob("*.mp3"))
+        assert len(mp3_files) > 0, f"No MP3 files found in {dropbox_dir}"
         versioned_files = [
-            f for f in filenames
-            if f.startswith(("0001-", "0002-", "0003-")) and f.endswith(".mp3")
+            f for f in mp3_files
+            if f.name.startswith(("0001-", "0002-", "0003-"))
+            and f.name.endswith(".mp3")
         ]
         assert len(versioned_files) > 0, (
-            f"No properly versioned files found. Files: {filenames}"
+            f"No properly versioned files found. Files: {[f.name for f in mp3_files]}"
         )
-
+        for file in versioned_files:
+            logger.info(
+                f"✅ Generated Dropbox file: {file} "
+                f"({file.stat().st_size} bytes)"
+            )
         logger.info("Publish script test completed successfully")
 
     def test_publish_to_s3_uploads_to_minio(
@@ -182,6 +163,7 @@ class TestFullPipeline:
         docker_manager: DockerComposeTestManager,
         minio_client: MinIOTestClient,
         clean_docker_environment,
+        clean_test_outputs: Path,
     ):
         """Test the complete pipeline from audio files to published output."""
         logger.info("Running complete end-to-end pipeline test...")
@@ -203,17 +185,9 @@ class TestFullPipeline:
         mixer_success = wait_for_service_completion(docker_manager, "audio-mixer")
         assert mixer_success, "Audio mixer step failed"
 
-        # Verify intermediate output exists
-        podcast_volume_contents = docker_manager.get_volume_contents(
-            "test-podcast-audio", "/data"
-        )
-        assert (
-            podcast_volume_contents is not None
-        ), "Could not inspect podcast volume after mixer"
-
-        mixed_files = [
-            line for line in podcast_volume_contents if "voice_memo_mix.mp3" in line
-        ]
+        # Verify intermediate output exists in local directory
+        podcast_dir = clean_test_outputs / "podcast"
+        mixed_files = list(podcast_dir.glob("voice_memo_mix.mp3"))
         assert len(mixed_files) > 0, "Mixed audio file not created by audio mixer"
 
         # Step 2: Run both publish services
@@ -229,15 +203,18 @@ class TestFullPipeline:
         )
         assert s3_success, "S3 publish step failed"
 
-        # Verify Dropbox output
-        dropbox_filenames = docker_manager.get_volume_filenames(
-            "test-dropbox-output", "/data", "*.mp3"
-        )
-        assert dropbox_filenames is not None, (
-            "Could not get filenames from dropbox output volume"
-        )
-        assert len(dropbox_filenames) > 0, (
-            "No files found in Dropbox output"
+        # Verify Dropbox output in local directory
+        dropbox_dir = clean_test_outputs / "dropbox"
+        dropbox_files = list(dropbox_dir.glob("*.mp3"))
+        assert len(dropbox_files) > 0, f"No files found in {dropbox_dir}"
+        versioned_files = [
+            f for f in dropbox_files
+            if f.name.startswith(("0001-", "0002-", "0003-"))
+            and f.name.endswith(".mp3")
+        ]
+        assert len(versioned_files) > 0, (
+            f"No properly versioned Dropbox files. Files: "
+            f"{[f.name for f in dropbox_files]}"
         )
 
         # Verify S3 output
@@ -246,14 +223,16 @@ class TestFullPipeline:
         assert len(s3_objects) > 0, "No objects found in S3 bucket"
 
         # Verify naming patterns
-        # Check Dropbox versioned naming pattern:
-        # starts with 4 digits, dash, then has .mp3 extension
+        # Check Dropbox versioned naming pattern: starts with 4 digits,
+        # dash, then has .mp3 extension
         versioned_files = [
-            f for f in dropbox_filenames
-            if f.startswith(("0001-", "0002-", "0003-")) and f.endswith(".mp3")
+            f for f in dropbox_files
+            if f.name.startswith(("0001-", "0002-", "0003-"))
+            and f.name.endswith(".mp3")
         ]
         assert len(versioned_files) > 0, (
-            f"No properly versioned Dropbox files. Files: {dropbox_filenames}"
+            f"No properly versioned Dropbox files. Files: "
+            f"{[f.name for f in dropbox_files]}"
         )
 
         # Check S3 ISO 8601 timestamp pattern: podcasts/YYYY-MM-DDTHHMMSS.mp3
@@ -265,6 +244,14 @@ class TestFullPipeline:
             f"No properly timestamped S3 files. Objects: {s3_objects}"
         )
 
+        logger.info(
+            f"🎵 Mixed audio: {mixed_files[0]} "
+            f"({mixed_files[0].stat().st_size} bytes)"
+        )
+        for file in versioned_files:
+            logger.info(f"📦 Dropbox file: {file} ({file.stat().st_size} bytes)")
+        logger.info(f"☁️  S3 objects: {timestamped_files}")
+        logger.info(f"🎧 Listen with: mpv {mixed_files[0]}")
         logger.info("Complete dual-publishing pipeline test completed successfully!")
         logger.info(f"Dropbox files: {versioned_files}")
         logger.info(f"S3 objects: {timestamped_files}")
