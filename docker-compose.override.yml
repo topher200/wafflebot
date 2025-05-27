@@ -16,6 +16,11 @@ services:
       - podcast-audio:/app/data/podcast:ro
       - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output
 
+  publish-podcast-to-s3:
+    volumes:
+      - ./.env:/app/.env:ro
+      - podcast-audio:/app/data/podcast:ro
+
 volumes:
   voice-memos:
   podcast-audio: 

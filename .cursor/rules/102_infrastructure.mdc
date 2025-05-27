@@ -33,16 +33,24 @@ alwaysApply: false
 - @docker-compose.yml - Base service definitions
 - @docker-compose.override.yml - Production volume mounts
 - @docker-compose.test.yml - Test-specific overrides
-- Sequential pipeline: file-downloader → audio-mixer → publish-to-dropbox
+- Sequential pipeline: file-downloader → audio-mixer → publish-to-dropbox + publish-podcast-to-s3
 
 @security_model [
     "S3 bucket completely private",
     "Only CloudFront can access S3 (via OAC)",
     "HTTPS enforced with TLS 1.2+ minimum",
-    "Environment-based resource isolation"
+    "Environment-based resource isolation",
+    "aws-vault for secure credential management",
+    "Temporary AWS credentials via environment variables"
 ]
 
 ## Production Deployment
 - @systemd/ - Service files for automated daily runs
 - @install-systemd-scripts.sh - Service installation
 - @run-wafflebot.sh - Manual pipeline execution
+
+## S3 Publishing
+- @src/publish-podcast-to-s3/ - Direct S3 upload service
+- ISO 8601 timestamp naming: YYYY-MM-DDTHHMMSS.mp3
+- Bucket structure: s3://bucket/podcasts/timestamp.mp3
+- AWS CLI with temporary credentials from aws-vault
