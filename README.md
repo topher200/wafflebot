@@ -2,7 +2,7 @@
 
 WaffleBot is a Discord bot that collects voice memos from a channel, combines
 them into a single audio file with intro, outro, and interlude music, and
-uploads the result to Dropbox/PushPod.
+uploads the result to Dropbox and AWS S3.
 
 ## Overview
 
@@ -11,6 +11,7 @@ uploads the result to Dropbox/PushPod.
 - **file-downloader**: Downloads voice memos from Discord
 - **audio-mixer**: Combines memos with music into a podcast audio file
 - **publish-to-dropbox**: Publishes the podcast audio to Dropbox with versioned naming ([details](src/publish-podcast-to-dropbox/README.md))
+- **publish-podcast-to-s3**: Publishes the podcast audio to AWS S3 with ISO 8601 timestamps ([details](src/publish-podcast-to-s3/README.md))
 
 ## Infrastructure
 
@@ -25,6 +26,7 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
 ### Setup
 
 1. **Configure your environments:**
+
    ```bash
    cd infra/terraform
    
@@ -38,16 +40,19 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
    ```
 
 2. **Deploy to staging:**
+
    ```bash
    ./deploy.sh staging
    ```
 
 3. **Deploy to production:**
+
    ```bash
    ./deploy.sh prod
    ```
 
 4. **Check deployment status:**
+
    ```bash
    ./status.sh all
    ```
@@ -94,6 +99,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 - Docker and Docker Compose installed
 - systemd (standard on most Linux distributions)
 - sudo access for systemd service installation
+- aws-vault configured for S3 publishing (optional)
 
 ### Installation
 
@@ -101,9 +107,17 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
    ```bash
    cp .env.example .env
+   # Edit .env with your Discord credentials and S3 bucket name
    ```
 
-2. **Install the systemd service and timer:**
+2. **Set up AWS credentials for S3 publishing (optional):**
+
+   ```bash
+   # Generate temporary AWS credentials using aws-vault
+   aws-vault exec your-profile -- env | grep AWS_ >> .env
+   ```
+
+3. **Install the systemd service and timer:**
 
    ```bash
    ./install-systemd-scripts.sh
@@ -122,6 +136,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   docker compose run --build --rm file-downloader
   docker compose run --build --rm audio-mixer
   docker compose run --build --rm publish-to-dropbox
+  docker compose run --build --rm publish-podcast-to-s3
   ```
 
   or
@@ -147,6 +162,20 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   ```bash
   systemctl stop homelab-run-wafflebot.timer
   ```
+
+## Publishing Destinations
+
+WaffleBot publishes to two destinations with different naming conventions:
+
+### Dropbox
+
+- **Location**: `~/Dropbox/Apps/PushPod/Haotic Waffles/`
+- **Naming**: `NNNN-Month DD, YYYY.mp3` (e.g., `0001-January 15, 2025.mp3`)
+
+### AWS S3
+
+- **Location**: `s3://your-bucket/podcasts/`
+- **Naming**: `YYYY-MM-DDTHHMMSS.mp3` (e.g., `2025-01-15T143022.mp3`)
 
 ## Testing Architecture
 

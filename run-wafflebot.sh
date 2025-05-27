@@ -14,6 +14,9 @@ docker compose run --rm audio-mixer
 echo "Publishing podcast to Dropbox..."
 docker compose run --rm publish-to-dropbox
 
+echo "Publishing podcast to S3..."
+docker compose run --rm publish-podcast-to-s3
+
 echo "Cleaning up intermediate volumes..."
 docker compose down -v
 
