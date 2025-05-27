@@ -1,0 +1,24 @@
+# Copy this file to staging.tfvars or prod.tfvars and fill in your actual values
+# The .tfvars files will be gitignored to keep your secrets safe
+
+# AWS region for most resources (ACM cert will be in us-east-1 automatically)
+aws_region = "us-east-1"
+
+# S3 bucket name - must be globally unique
+# Examples: "my-podcast-staging", "my-podcast-prod"
+podcast_bucket_name = "my-unique-podcast-bucket"
+
+# Your custom domain name
+# Examples: "staging-podcast.yourdomain.com", "podcast.yourdomain.com"
+podcast_domain_name = "podcast.yourdomain.com"
+
+# Route53 hosted zone ID for your domain
+# You can find this in the AWS Console under Route53 > Hosted zones
+podcast_route53_zone_id = "Z1234567890ABC"
+
+# Environment name
+# Use "staging" or "prod"
+podcast_environment = "prod"
+
+# Project name for resource tagging
+podcast_project_name = "my-podcast-project" 

@@ -31,30 +31,38 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
    cd infra/terraform
    
    # Copy example files and customize with your values
-   cp terraform.tfvars.example environments/staging.tfvars
-   cp terraform.tfvars.example environments/prod.tfvars
+   cp podcast/podcast.tfvars.example podcast/staging.tfvars
+   cp podcast/podcast.tfvars.example podcast/prod.tfvars
+   cp test-files/test-files.tfvars.example test-files/test-files.tfvars
    
    # Edit each file with environment-specific values
-   # staging.tfvars: bucket_name = "my-podcast-staging", domain_name = "staging-podcast.mydomain.com"
-   # prod.tfvars: bucket_name = "my-podcast-prod", domain_name = "podcast.mydomain.com"
+   # staging.tfvars: podcast_bucket_name = "my-podcast-staging", podcast_domain_name = "staging-podcast.mydomain.com"
+   # prod.tfvars: podcast_bucket_name = "my-podcast-prod", podcast_domain_name = "podcast.mydomain.com"
+   # test-files.tfvars: test_files_bucket_name = "my-test-files-bucket"
    ```
 
 2. **Deploy to staging:**
 
    ```bash
-   ./deploy.sh staging
+   ./infra/terraform/scripts/deploy-podcast.sh staging
    ```
 
 3. **Deploy to production:**
 
    ```bash
-   ./deploy.sh prod
+   ./infra/terraform/scripts/deploy-podcast.sh prod
    ```
 
-4. **Check deployment status:**
+4. **Deploy test files bucket:**
 
    ```bash
-   ./status.sh all
+   ./infra/terraform/scripts/deploy-test-files.sh
+   ```
+
+5. **Deploy everything:**
+
+   ```bash
+   ./infra/terraform/scripts/deploy-all.sh
    ```
 
 For detailed infrastructure documentation, see [`infra/terraform/README.md`](infra/terraform/README.md).

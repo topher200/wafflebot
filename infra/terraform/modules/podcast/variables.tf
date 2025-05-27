@@ -1,7 +1,6 @@
 variable "aws_region" {
-  description = "AWS region for resources (except ACM cert which must be in us-east-1)"
+  description = "AWS region for resources"
   type        = string
-  default     = "us-east-1"
 }
 
 variable "bucket_name" {
@@ -22,7 +21,6 @@ variable "route53_zone_id" {
 variable "environment" {
   description = "Environment name (e.g., prod, staging)"
   type        = string
-  default     = "prod"
 }
 
 variable "project_name" {
