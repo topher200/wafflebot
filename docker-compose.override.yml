@@ -1,12 +1,12 @@
 services:
   file-downloader:
     volumes:
-      - ./.env:/app/.env:ro
+      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - voice-memos:/app/data/voice-memos
 
   audio-mixer:
     volumes:
-      - ./.env:/app/.env:ro
+      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - ~/Dropbox/wafflebot/background-music:/app/data/background-music:ro
       - podcast-audio:/app/data/podcast
       - voice-memos:/app/data/voice-memos:ro
@@ -18,9 +18,15 @@ services:
 
   publish-podcast-to-s3:
     volumes:
-      - ./.env:/app/.env:ro
+      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - podcast-audio:/app/data/podcast:ro
+
+  update-rss-feed:
+    volumes:
+      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
+      - rss-output:/app/data/rss
 
 volumes:
   voice-memos:
-  podcast-audio: 
+  podcast-audio:
+  rss-output: 

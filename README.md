@@ -143,14 +143,23 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    # Edit .env with your Discord credentials and S3 bucket name
    ```
 
-2. **Set up AWS credentials for S3 publishing (optional):**
+2. **For staging environment (optional):**
+
+   ```bash
+   # Create staging environment configuration
+   cp .env .env.staging
+   # Edit .env.staging and update S3_BUCKET_NAME to your staging bucket
+   # (e.g., "my-podcast-staging" instead of "my-podcast-prod")
+   ```
+
+3. **Set up AWS credentials for S3 publishing (optional):**
 
    ```bash
    # Generate temporary AWS credentials using aws-vault
    aws-vault exec your-profile -- env | grep AWS_ >> .env
    ```
 
-3. **Install the systemd service and timer:**
+4. **Install the systemd service and timer:**
 
    ```bash
    ./install-systemd-scripts.sh
@@ -163,7 +172,23 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
 ### Manual Control
 
-- **Run manually:**
+WaffleBot supports both staging and production environments:
+
+- **Run manually (production - default):**
+
+  ```bash
+  ./run-wafflebot.sh
+  # or explicitly
+  ./run-wafflebot.sh prod
+  ```
+
+- **Run manually (staging):**
+
+  ```bash
+  ./run-wafflebot.sh staging
+  ```
+
+- **Run individual services:**
 
   ```bash
   docker compose run --build --rm file-downloader
@@ -173,11 +198,10 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   docker compose run --build --rm update-rss-feed
   ```
 
-  or
+**Environment Configuration:**
 
-  ```bash
-  ./run-wafflebot.sh
-  ```
+- **Production**: Uses `.env` file
+- **Staging**: Uses `.env.staging` file
 
 - **Check service status:**
 

@@ -3,6 +3,7 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+.env.staging
 .DS_Store
 .vscode/
 .idea/
