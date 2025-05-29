@@ -12,7 +12,8 @@ WORKDIR /app
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
-    apt-get install -y ffmpeg curl unzip
+    apt-get install -y ffmpeg curl unzip && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install AWS CLI
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
@@ -23,13 +24,13 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir uv
 
-COPY pyproject.toml uv.lock ./
+COPY --chown=topher:topher pyproject.toml uv.lock ./
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=cache,target=/root/.cache/uv \
     uv sync --no-dev --locked
 
-COPY . .
+COPY --chown=topher:topher . .
 
 # Create and set permissions for intermediate directories
 RUN mkdir -p /app/data/voice-memos && \
@@ -38,9 +39,6 @@ RUN mkdir -p /app/data/podcast && \
     chown -R topher:topher /app/data/podcast
 RUN mkdir -p /app/dropbox-output && \
     chown -R topher:topher /app/dropbox-output
-
-# Set ownership of the entire app directory
-RUN chown -R topher:topher /app
 
 # Switch to non-root user
 USER topher
