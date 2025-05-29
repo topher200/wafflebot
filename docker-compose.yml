@@ -19,5 +19,9 @@ services:
       context: .
     command: bash src/publish-podcast-to-s3/publish.sh
 
-# Volumes will be defined in override files
+  update-rss-feed:
+    build:
+      context: .
+    command: uv run python src/update_rss_feed/generate_rss.py
 
+# Volumes will be defined in override files

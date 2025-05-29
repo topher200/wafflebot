@@ -20,6 +20,13 @@ services:
     depends_on:
       - minio
 
+  update-rss-feed:
+    volumes:
+      - ./tests/.env.test:/app/.env:ro
+      - ./tests/cache/test-outputs/rss:/app/data/rss
+    depends_on:
+      - minio
+
   minio:
     image: minio/minio:latest
     ports:

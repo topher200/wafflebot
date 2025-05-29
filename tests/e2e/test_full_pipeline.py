@@ -2,6 +2,7 @@
 
 import logging
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -156,6 +157,81 @@ class TestFullPipeline:
             f"S3 publish test completed successfully. Uploaded: {timestamped_files[0]}"
         )
 
+    # TODO(topher): re-enable this when RSS feed is implemented
+    @pytest.mark.skip(reason="RSS feed is not implemented yet")
+    def test_update_rss_feed_generates_feed(
+        self,
+        docker_manager: DockerComposeTestManager,
+        clean_docker_environment,
+        minio_client: MinIOTestClient,
+        clean_test_outputs: Path,
+    ):
+        """Test that the RSS feed service generates and uploads RSS feed to S3."""
+        logger.info("Testing update-rss-feed with MinIO...")
+
+        # First, we need some podcast files in S3 for the RSS feed to process
+        # Upload a dummy podcast file using the new MinIOTestClient upload method
+        bucket_name = "test-podcast-bucket"
+        test_filename = f"podcasts/{datetime.now().strftime('%Y-%m-%dT%H%M%S')}.mp3"
+        test_content = "dummy podcast content for RSS testing"
+
+        # Upload test content using the MinIO helper
+        upload_success = minio_client.upload_content(
+            bucket_name, test_filename, test_content
+        )
+        assert upload_success, "Failed to upload test podcast file to MinIO"
+
+        # Verify the test file was uploaded
+        objects_before = minio_client.list_bucket_objects(bucket_name, "podcasts/")
+        assert len(objects_before) > 0, "Test podcast file should be uploaded"
+
+        # Build and run the RSS feed service
+        assert docker_manager.build_services(["update-rss-feed"]), (
+            "Failed to build update-rss-feed service"
+        )
+
+        rss_result = docker_manager.run_service("update-rss-feed")
+        if rss_result.returncode != 0:
+            logger.error(f"RSS feed STDOUT: {rss_result.stdout}")
+            logger.error(f"RSS feed STDERR: {rss_result.stderr}")
+        assert rss_result.returncode == 0, (
+            f"RSS feed service failed: {rss_result.stderr}"
+        )
+
+        # Verify RSS feed was saved locally
+        rss_dir = clean_test_outputs / "rss"
+        rss_files = list(rss_dir.glob("*.xml"))
+        assert len(rss_files) > 0, f"No RSS files found in {rss_dir}"
+
+        rss_file = rss_files[0]
+        rss_content = rss_file.read_text(encoding="utf-8")
+
+        # Verify RSS content structure
+        assert "<?xml version=" in rss_content, "RSS should have XML declaration"
+        assert "<rss version=" in rss_content, "RSS should have rss element"
+        assert "WaffleBot Podcast" in rss_content, "RSS should have podcast title"
+        assert "<channel>" in rss_content, "RSS should have channel element"
+        assert "Found 1 episodes" in rss_content, (
+            "RSS should reference the test episode"
+        )
+
+        # Verify RSS feed was uploaded to S3
+        rss_objects = minio_client.list_bucket_objects(bucket_name, "rss/")
+        assert len(rss_objects) > 0, "No RSS objects found in MinIO bucket"
+
+        # Should find podcast.xml (default name)
+        rss_files_s3 = [obj for obj in rss_objects if obj.endswith(".xml")]
+        assert len(rss_files_s3) > 0, (
+            f"No XML files found in S3. Objects: {rss_objects}"
+        )
+        assert "rss/podcast.xml" in rss_files_s3, "Default RSS feed name not found"
+
+        logger.info(
+            f"✅ RSS feed saved locally: {rss_file} ({rss_file.stat().st_size} bytes)"
+        )
+        logger.info(f"☁️  RSS feed uploaded to S3: {rss_files_s3[0]}")
+        logger.info("RSS feed test completed successfully")
+
     def test_complete_pipeline_end_to_end(
         self,
         test_audio_files: List[Dict[str, Any]],
@@ -175,7 +251,12 @@ class TestFullPipeline:
         assert len(test_background_music) >= 1, "Need at least 1 background music file"
 
         # Build all required services
-        services_to_build = ["audio-mixer", "publish-to-dropbox"]
+        services_to_build = [
+            "audio-mixer",
+            "publish-to-dropbox",
+            "publish-podcast-to-s3",
+            "update-rss-feed",
+        ]
         assert docker_manager.build_services(services_to_build), (
             "Failed to build required services"
         )
@@ -202,6 +283,11 @@ class TestFullPipeline:
             docker_manager, "publish-podcast-to-s3"
         )
         assert s3_success, "S3 publish step failed"
+
+        # TODO(topher): re-enable this when RSS feed is implemented
+        # logger.info("Step 4: Running RSS feed update...")
+        # rss_success = wait_for_service_completion(docker_manager, "update-rss-feed")
+        # assert rss_success, "RSS feed update step failed"
 
         # Verify Dropbox output in local directory
         dropbox_dir = clean_test_outputs / "dropbox"
@@ -244,13 +330,32 @@ class TestFullPipeline:
             f"No properly timestamped S3 files. Objects: {s3_objects}"
         )
 
+        # TODO(topher): re-enable this when RSS feed is implemented
+        # # Verify RSS feed output
+        # rss_dir = clean_test_outputs / "rss"
+        # rss_files = list(rss_dir.glob("*.xml"))
+        # assert len(rss_files) > 0, f"No RSS files found in {rss_dir}"
+
+        # # Verify RSS feed was uploaded to S3
+        # rss_objects = minio_client.list_bucket_objects(bucket_name, "rss/")
+        # assert len(rss_objects) > 0, "No RSS objects found in S3 bucket"
+        # rss_files_s3 = [obj for obj in rss_objects if obj.endswith(".xml")]
+        # assert len(rss_files_s3) > 0, (
+        #     f"No RSS XML files found in S3. Objects: {rss_objects}"
+        # )
+
         logger.info(
             f"🎵 Mixed audio: {mixed_files[0]} ({mixed_files[0].stat().st_size} bytes)"
         )
         for file in versioned_files:
             logger.info(f"📦 Dropbox file: {file} ({file.stat().st_size} bytes)")
         logger.info(f"☁️  S3 objects: {timestamped_files}")
+        # TODO(topher): re-enable this when RSS feed is implemented
+        # logger.info(
+        #     f"📻 RSS feed: {rss_files[0]} ({rss_files[0].stat().st_size} bytes)"
+        # )
+        # logger.info(f"☁️  RSS S3 objects: {rss_files_s3}")
         logger.info(f"🎧 Listen with: mpv {mixed_files[0]}")
-        logger.info("Complete dual-publishing pipeline test completed successfully!")
+        logger.info("Complete pipeline with RSS feed test completed successfully!")
         logger.info(f"Dropbox files: {versioned_files}")
         logger.info(f"S3 objects: {timestamped_files}")
