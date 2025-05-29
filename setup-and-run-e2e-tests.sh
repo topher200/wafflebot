@@ -12,6 +12,10 @@ docker compose -f docker-compose.yml -f docker-compose.test.yml down -v --remove
 echo "Installing dependencies..."
 uv sync --group dev
 
+# Build Docker images
+echo "Building Docker images..."
+./build.sh
+
 # Run the tests
 echo "Running E2E tests..."
 uv run pytest tests/e2e/ -v

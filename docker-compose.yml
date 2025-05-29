@@ -1,27 +1,17 @@
 services:
   file-downloader:
-    build:
-      context: .
-    command: uv run python src/file_downloader/download.py
+    image: wafflebot-file-downloader:latest
 
   audio-mixer:
-    build:
-      context: .
-    command: uv run python src/mixer/generate_audio.py
+    image: wafflebot-audio-mixer:latest
 
   publish-to-dropbox:
-    build:
-      context: .
-    command: bash src/publish-podcast-to-dropbox/publish.sh
+    image: wafflebot-publish-to-dropbox:latest
 
   publish-podcast-to-s3:
-    build:
-      context: .
-    command: bash src/publish-podcast-to-s3/publish.sh
+    image: wafflebot-publish-podcast-to-s3:latest
 
   update-rss-feed:
-    build:
-      context: .
-    command: uv run python src/update_rss_feed/generate_rss.py
+    image: wafflebot-update-rss-feed:latest
 
 # Volumes will be defined in override files
