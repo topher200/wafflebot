@@ -1,20 +1,45 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Python virtual environments
+.venv/
+venv/
+
+# Python package caches and binaries
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Python site-packages and large dependencies
+.venv/lib/
+.venv/lib64/
+.venv/bin/
+.venv/include/
+.venv/share/
+.venv/lib/python3.13/site-packages/
+.venv/lib/python3.13/site-packages/pyright/
+.venv/lib/python3.13/site-packages/botocore/
+
+# Ignore logs and output
+data/
+output/
+logs/
+
+# Docker artifacts
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# environment files
 .env
 .env.staging
-.DS_Store
+
+# IDE/editor files
 .vscode/
 .idea/
 *.egg-info/
 dist/
 build/
-data/
-output/
-logs/
-tests/cache/*
-!tests/cache/.gitkeep
 
 # Terraform - General patterns for any Terraform directory
 **/.terraform/
@@ -26,3 +51,7 @@ tests/cache/*
 # Terraform - Environment configs (ignore all .tfvars, keep examples)
 **/*.tfvars
 !**/*.tfvars.example
+
+# tests cache
+/tests/cache/*
+!tests/cache/.gitkeep

@@ -42,6 +42,7 @@ logs/
 .pytest_cache/
 .coverage
 htmlcov/
+tests/cache
 
 # Docker
 .docker/
@@ -57,3 +58,31 @@ Thumbs.db
 
 # Data directories (mounted as volumes)
 data/
+
+# Python virtual environments
+.venv/
+venv/
+.venv/lib/
+.venv/lib64/
+.venv/bin/
+.venv/include/
+.venv/share/
+.venv/lib/python3.13/site-packages/
+.venv/lib/python3.13/site-packages/pyright/
+.venv/lib/python3.13/site-packages/botocore/
+
+# Output directory
+output/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/*.auto.tfvars
+**/*.tfvars
+!**/*.tfvars.example
+
+# Environment files
+.env
+.env.staging
