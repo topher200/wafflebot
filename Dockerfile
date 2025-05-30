@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM python:3.13-slim
+FROM python:3.13-slim AS base
 
 # Create group and user that match host's UID/GID
 ARG USER_ID=1000
@@ -49,4 +49,17 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
 ENV PYTHONUNBUFFERED=1
 
+FROM base AS file-downloader
+CMD ["uv", "run", "python", "src/file_downloader/download.py"]
+
+FROM base AS audio-mixer
 CMD ["uv", "run", "python", "src/mixer/generate_audio.py"]
+
+FROM base AS publish-to-dropbox
+CMD ["bash", "src/publish-podcast-to-dropbox/publish.sh"]
+
+FROM base AS publish-podcast-to-s3
+CMD ["bash", "src/publish-podcast-to-s3/publish.sh"]
+
+FROM base AS update-rss-feed
+CMD ["uv", "run", "python", "src/update_rss_feed/generate_rss.py"]

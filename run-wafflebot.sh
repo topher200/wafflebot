@@ -48,8 +48,7 @@ fi
 echo "📁 Using environment file: $ENV_FILE"
 
 # Build Docker images
-echo "Building Docker images..."
-docker compose build
+./build.sh
 
 # Run the pipeline with environment-specific configuration
 export COMPOSE_ENV_FILE="$ENV_FILE"

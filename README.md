@@ -174,6 +174,12 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
 WaffleBot supports both staging and production environments:
 
+- **Build images:**
+
+  ```bash
+  ./build.sh
+  ```
+
 - **Run manually (production - default):**
 
   ```bash
@@ -191,11 +197,11 @@ WaffleBot supports both staging and production environments:
 - **Run individual services:**
 
   ```bash
-  docker compose run --build --rm file-downloader
-  docker compose run --build --rm audio-mixer
-  docker compose run --build --rm publish-to-dropbox
-  docker compose run --build --rm publish-podcast-to-s3
-  docker compose run --build --rm update-rss-feed
+  docker compose run --rm file-downloader
+  docker compose run --rm audio-mixer
+  docker compose run --rm publish-to-dropbox
+  docker compose run --rm publish-podcast-to-s3
+  docker compose run --rm update-rss-feed
   ```
 
 **Environment Configuration:**
