@@ -17,6 +17,9 @@ docker compose run --rm publish-to-dropbox
 echo "Publishing podcast to S3..."
 docker compose run --rm publish-podcast-to-s3
 
+echo "Updating RSS feed..."
+docker compose run --rm update-rss-feed
+
 echo "Cleaning up intermediate volumes..."
 docker compose down -v
 

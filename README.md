@@ -12,6 +12,7 @@ uploads the result to Dropbox and AWS S3.
 - **audio-mixer**: Combines memos with music into a podcast audio file
 - **publish-to-dropbox**: Publishes the podcast audio to Dropbox with versioned naming ([details](src/publish-podcast-to-dropbox/README.md))
 - **publish-podcast-to-s3**: Publishes the podcast audio to AWS S3 with ISO 8601 timestamps ([details](src/publish-podcast-to-s3/README.md))
+- **update-rss-feed**: Generates and updates RSS feed from all S3 podcast files ([details](src/update_rss_feed/README.md))
 
 ## Infrastructure
 
@@ -169,6 +170,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
   docker compose run --build --rm audio-mixer
   docker compose run --build --rm publish-to-dropbox
   docker compose run --build --rm publish-podcast-to-s3
+  docker compose run --build --rm update-rss-feed
   ```
 
   or
@@ -197,7 +199,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
 ## Publishing Destinations
 
-WaffleBot publishes to two destinations with different naming conventions:
+WaffleBot publishes to multiple destinations with different naming conventions:
 
 ### Dropbox
 
@@ -208,6 +210,12 @@ WaffleBot publishes to two destinations with different naming conventions:
 
 - **Location**: `s3://your-bucket/podcasts/`
 - **Naming**: `YYYY-MM-DDTHHMMSS.mp3` (e.g., `2025-01-15T143022.mp3`)
+
+### RSS Feed
+
+- **Location**: `s3://your-bucket/rss/`
+- **Naming**: `podcast.xml` (configurable via `RSS_FEED_NAME` environment variable)
+- **Content**: Auto-generated RSS 2.0 feed with all podcast episodes from S3
 
 ## Testing Architecture
 

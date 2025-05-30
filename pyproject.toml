@@ -10,6 +10,7 @@ dependencies = [
     "discord.py~=2.5.2",
     "pydub-ng~=0.2.0",
     "python-dotenv~=1.1.0",
+    "boto3~=1.35.0",
 ]
 
 [dependency-groups]

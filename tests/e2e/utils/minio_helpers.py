@@ -44,20 +44,33 @@ class MinIOTestClient:
         logger.error(f"MinIO not ready after {timeout} seconds")
         return False
 
-    def _run_aws_cli_in_container(self, args: List[str]) -> subprocess.CompletedProcess:
+    def _run_aws_cli_in_container(
+        self, args: List[str], volumes: Optional[List[str]] = None
+    ) -> subprocess.CompletedProcess:
         docker_cmd = [
             "docker",
             "run",
             "--rm",
             "--network=wafflebot_default",
-            "-e",
-            f"AWS_ACCESS_KEY_ID={self.access_key}",
-            "-e",
-            f"AWS_SECRET_ACCESS_KEY={self.secret_key}",
-            "-e",
-            "AWS_DEFAULT_REGION=us-east-1",
-            "amazon/aws-cli:2.13.14",
-        ] + args
+        ]
+
+        # Add volume mounts if provided
+        if volumes:
+            for volume in volumes:
+                docker_cmd.extend(["-v", volume])
+
+        docker_cmd.extend(
+            [
+                "-e",
+                f"AWS_ACCESS_KEY_ID={self.access_key}",
+                "-e",
+                f"AWS_SECRET_ACCESS_KEY={self.secret_key}",
+                "-e",
+                "AWS_DEFAULT_REGION=us-east-1",
+                "amazon/aws-cli:2.13.14",
+            ]
+            + args
+        )
         return subprocess.run(docker_cmd, capture_output=True, text=True)
 
     def list_bucket_objects(self, bucket_name: str, prefix: str = "") -> List[str]:
@@ -129,3 +142,49 @@ class MinIOTestClient:
         except Exception as e:
             logger.error(f"Error getting object info: {e}")
             return None
+
+    def upload_file(
+        self, bucket_name: str, object_key: str, local_file_path: str
+    ) -> bool:
+        """Upload a local file to the bucket using AWS CLI (in a container)."""
+        try:
+            cmd = [
+                "s3",
+                "cp",
+                "/tmp/upload_file",
+                f"s3://{bucket_name}/{object_key}",
+                "--endpoint-url",
+                self.container_endpoint,
+            ]
+            volumes = [f"{local_file_path}:/tmp/upload_file"]
+            result = self._run_aws_cli_in_container(cmd, volumes=volumes)
+
+            if result.returncode == 0:
+                logger.info(
+                    f"Successfully uploaded {local_file_path} to s3://{bucket_name}/{object_key}"
+                )
+                return True
+            else:
+                logger.error(f"Failed to upload file: {result.stderr}")
+                return False
+        except Exception as e:
+            logger.error(f"Error uploading file: {e}")
+            return False
+
+    def upload_content(self, bucket_name: str, object_key: str, content: str) -> bool:
+        """Upload content as a file to the bucket using AWS CLI (in a container)."""
+        import os
+        import tempfile
+
+        # Create a temporary file with the content
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+
+        try:
+            # Use the upload_file method to upload the temporary file
+            success = self.upload_file(bucket_name, object_key, temp_file_path)
+            return success
+        finally:
+            # Clean up the temporary file
+            os.unlink(temp_file_path)
