@@ -48,6 +48,8 @@ tests/cache
 .docker/
 docker-compose*.yml
 Dockerfile*
+build.sh
+docker-bake.hcl
 
 # System
 .DS_Store
