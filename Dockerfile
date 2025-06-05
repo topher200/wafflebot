@@ -7,8 +7,6 @@ ARG GROUP_ID=1000
 RUN groupadd -g ${GROUP_ID} topher && \
     useradd -u ${USER_ID} -g ${GROUP_ID} -m topher
 
-WORKDIR /app
-
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
@@ -23,6 +21,9 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install uv
+
+USER topher
+WORKDIR /app
 
 COPY --chown=topher:topher pyproject.toml uv.lock ./
 
@@ -39,9 +40,6 @@ RUN mkdir -p /app/data/podcast && \
     chown -R topher:topher /app/data/podcast
 RUN mkdir -p /app/dropbox-output && \
     chown -R topher:topher /app/dropbox-output
-
-# Switch to non-root user
-USER topher
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
