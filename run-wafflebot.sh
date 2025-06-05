@@ -59,7 +59,7 @@ docker compose run --rm file-downloader
 echo "Running audio mixer..."
 docker compose run --rm audio-mixer
 
-# Skip dropbox in staging
+# Skip dropbox upload in staging; we don't have a Dropbox account for staging
 if [ "$ENVIRONMENT" = "prod" ]; then
     echo "Publishing podcast to Dropbox..."
     docker compose run --rm publish-to-dropbox
