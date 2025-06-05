@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "Building base image..."
-docker buildx bake --load wafflebot-base
+docker buildx bake wafflebot-base
 
 echo "Building service images..."
 docker buildx bake --load all
