@@ -156,7 +156,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
    ```bash
    # Generate temporary AWS credentials using aws-vault
-   aws-vault exec your-profile -- env | grep AWS_ >> .env
+   aws-vault exec <your-profile> -- env | grep AWS_ >> .env
    ```
 
 4. **Install the systemd service and timer:**
