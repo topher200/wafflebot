@@ -22,7 +22,7 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
     rm -rf awscliv2.zip aws/
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir uv
+    pip install uv
 
 COPY --chown=topher:topher pyproject.toml uv.lock ./
 
