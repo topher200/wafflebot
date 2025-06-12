@@ -7,14 +7,18 @@ services:
   audio-mixer:
     volumes:
       - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
-      - ~/Dropbox/wafflebot/background-music:/app/data/background-music:ro
+      - ${BACKGROUND_MUSIC_PATH}:/app/data/background-music:ro
       - podcast-audio:/app/data/podcast
       - voice-memos:/app/data/voice-memos:ro
 
   publish-to-dropbox:
     volumes:
       - podcast-audio:/app/data/podcast:ro
-      - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output
+      - type: bind
+        source: ${DROPBOX_OUTPUT_PATH}
+        target: /app/data/dropbox-output
+        bind:
+          create_host_path: false
 
   publish-podcast-to-s3:
     volumes:

@@ -233,7 +233,7 @@ WaffleBot publishes to multiple destinations with different naming conventions:
 
 ### Dropbox
 
-- **Location**: `~/Dropbox/Apps/PushPod/Haotic Waffles/`
+- **Location**: `~/Dropbox/Apps/PushPod/PodcastName/`
 - **Naming**: `NNNN-Month DD, YYYY.mp3` (e.g., `0001-January 15, 2025.mp3`)
 
 ### AWS S3

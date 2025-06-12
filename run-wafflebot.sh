@@ -54,24 +54,21 @@ echo "📁 Using environment file: $ENV_FILE"
 export COMPOSE_ENV_FILE="$ENV_FILE"
 
 echo "Running file downloader..."
-docker compose run --rm file-downloader
+docker compose --env-file "$ENV_FILE" run --rm file-downloader
 
 echo "Running audio mixer..."
-docker compose run --rm audio-mixer
+docker compose --env-file "$ENV_FILE" run --rm audio-mixer
 
-# Skip dropbox upload in staging; we don't have a Dropbox account for staging
-if [ "$ENVIRONMENT" = "prod" ]; then
-    echo "Publishing podcast to Dropbox..."
-    docker compose run --rm publish-to-dropbox
-fi
+echo "Publishing podcast to Dropbox..."
+docker compose --env-file "$ENV_FILE" run --rm publish-to-dropbox
 
 echo "Publishing podcast to S3..."
-docker compose run --rm publish-podcast-to-s3
+docker compose --env-file "$ENV_FILE" run --rm publish-podcast-to-s3
 
 echo "Updating RSS feed..."
-docker compose run --rm update-rss-feed
+docker compose --env-file "$ENV_FILE" run --rm update-rss-feed
 
 echo "Cleaning up intermediate volumes..."
-docker compose down -v
+docker compose --env-file "$ENV_FILE" down -v
 
 echo "✅ WaffleBot pipeline completed successfully in $ENVIRONMENT environment!"

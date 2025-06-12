@@ -33,11 +33,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY --chown=topher:topher . .
 
-# Create and set permissions for intermediate directories
-RUN mkdir -p /app/data/voice-memos && \
-    chown -R topher:topher /app/data/voice-memos
-RUN mkdir -p /app/data/podcast && \
-    chown -R topher:topher /app/data/podcast
+# Create intermediate directories for mounts
+RUN mkdir -p /app/data/voice-memos /app/data/podcast /app/data/dropbox-output
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"

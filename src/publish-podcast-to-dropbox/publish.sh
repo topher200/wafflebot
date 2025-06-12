@@ -4,8 +4,12 @@ set -e
 
 echo "Publishing podcast to Dropbox..."
 
+echo "Running from $(pwd)"
+echo "Contents of $(pwd)/data:"
+ls -la "$(pwd)/data"
+
 INPUT_FILE="data/podcast/voice_memo_mix.mp3"
-OUTPUT_DIR="dropbox-output"
+OUTPUT_DIR="data/dropbox-output"
 
 # Check if input file exists
 if [ ! -f "$INPUT_FILE" ]; then
