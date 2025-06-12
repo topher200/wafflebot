@@ -62,11 +62,11 @@ docker compose --env-file "$ENV_FILE" run --rm audio-mixer
 echo "Publishing podcast to Dropbox..."
 docker compose --env-file "$ENV_FILE" run --rm publish-to-dropbox
 
-echo "Publishing podcast to S3..."
-docker compose --env-file "$ENV_FILE" run --rm publish-podcast-to-s3
+# echo "Publishing podcast to S3..."
+# docker compose --env-file "$ENV_FILE" run --rm publish-podcast-to-s3
 
-echo "Updating RSS feed..."
-docker compose --env-file "$ENV_FILE" run --rm update-rss-feed
+# echo "Updating RSS feed..."
+# docker compose --env-file "$ENV_FILE" run --rm update-rss-feed
 
 echo "Cleaning up intermediate volumes..."
 docker compose --env-file "$ENV_FILE" down -v
