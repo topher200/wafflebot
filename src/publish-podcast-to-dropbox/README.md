@@ -9,25 +9,11 @@ The `publish-to-dropbox` service takes the generated podcast audio file from the
 ## How it Works
 
 1. **Input**: Reads the generated podcast file from the `podcast-audio` Docker volume (mounted as read-only)
-2. **Processing**: 
+2. **Processing**:
    - Finds existing podcast files in the Dropbox directory
    - Determines the next sequential number NNNN (e.g., 0001, 0002, etc.)
    - Generates a filename with format: `NNNN-Month DD, YYYY.mp3`
 3. **Output**: Copies the file to the mounted Dropbox directory
-
-## Docker Integration
-
-The service is configured in `docker-compose.yml` as:
-
-```yaml
-publish-to-dropbox:
-  build:
-    context: .
-  volumes:
-    - podcast-audio:/app/data/podcast:ro  # Read-only access to generated audio
-    - ~/Dropbox/Apps/PushPod/Haotic\ Waffles:/app/dropbox-output  # Dropbox destination
-  command: bash src/publish-podcast-to-dropbox/publish.sh
-```
 
 ## Usage
 

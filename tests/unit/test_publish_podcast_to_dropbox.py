@@ -16,7 +16,7 @@ class TestPublishScript:
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
             podcast_dir = temp_path / "data" / "podcast"
-            dropbox_dir = temp_path / "dropbox-output"
+            dropbox_dir = temp_path / "data" / "dropbox-output"
 
             podcast_dir.mkdir(parents=True)
             dropbox_dir.mkdir(parents=True)
@@ -211,4 +211,4 @@ class TestPublishIntegration:
         content = script_path.read_text()
 
         assert 'INPUT_FILE="data/podcast/voice_memo_mix.mp3"' in content
-        assert 'OUTPUT_DIR="dropbox-output"' in content
+        assert 'OUTPUT_DIR="data/dropbox-output"' in content

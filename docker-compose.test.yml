@@ -11,7 +11,7 @@ services:
     user: root
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
-      - ./tests/cache/test-outputs/dropbox:/app/dropbox-output
+      - ./tests/cache/test-outputs/dropbox:/app/data/dropbox-output
 
   publish-podcast-to-s3:
     volumes:
