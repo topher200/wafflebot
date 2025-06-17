@@ -68,10 +68,11 @@ def get_s3_client():
 
 
 def list_podcast_files(s3_client) -> List[Dict[str, Any]]:
-    """List all podcast audio files from S3 bucket."""
+    """List podcast audio files from S3 bucket with configurable limit."""
     logger.info("Listing podcast files from S3...")
 
     bucket_name = os.getenv("S3_BUCKET_NAME")
+    max_files = int(os.getenv("MAX_PODCAST_FILES", "100"))
     podcast_files = []
 
     try:
@@ -82,6 +83,10 @@ def list_podcast_files(s3_client) -> List[Dict[str, Any]]:
         for page in pages:
             if "Contents" in page:
                 for obj in page["Contents"]:
+                    if len(podcast_files) >= max_files:
+                        logger.info(f"Reached maximum podcast files limit: {max_files}")
+                        break
+
                     key = obj["Key"]
                     # Only include audio files
                     if key.endswith((".mp3", ".wav", ".m4a", ".ogg")):
@@ -94,10 +99,13 @@ def list_podcast_files(s3_client) -> List[Dict[str, Any]]:
                         }
                         podcast_files.append(file_info)
 
+            if len(podcast_files) >= max_files:
+                break
+
         # Sort by last modified date (newest first)
         podcast_files.sort(key=lambda x: x["last_modified"], reverse=True)
 
-        logger.info(f"Found {len(podcast_files)} podcast files")
+        logger.info(f"Found {len(podcast_files)} podcast files (limit: {max_files})")
         return podcast_files
 
     except ClientError as e:
