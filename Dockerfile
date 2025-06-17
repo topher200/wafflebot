@@ -27,8 +27,7 @@ WORKDIR /app
 
 COPY --chown=topher:topher pyproject.toml uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,target=/home/topher/.cache/uv,uid=1000,gid=1000 \
     uv sync --no-dev --locked
 
 COPY --chown=topher:topher . .
