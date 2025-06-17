@@ -43,36 +43,18 @@ def load_voice_memos() -> List[AudioSegment]:
         logger.error(f"No voice memos found in {VOICE_DIR}")
         raise NoVoiceMemosFoundError(f"No voice memos found in {VOICE_DIR}")
 
-    # First load all files
-    raw_segs: List[AudioSegment] = []
+    voice_segs: List[AudioSegment] = []
     for f in voice_files:
         logger.info(f"Loading {f.name}")
         segment = AudioSegment.from_file(str(f))
         if len(segment) > MAX_LENGTH_MS:
             logger.info(f"Voice memo {f.name} exceeds 3m 10s limit, truncating...")
             segment = segment[:MAX_LENGTH_MS]
-        raw_segs.append(segment)
 
-    # Concatenate all segments to normalize them together
-    logger.info(f"Normalizing {len(raw_segs)} voice memos...")
-    combined = raw_segs[0]
-    for seg in raw_segs[1:]:
-        combined += seg
-    normalized_combined = normalize(combined)
-
-    # Split back into individual segments
-    voice_segs = []
-    current_pos = 0
-    logger.info("Splitting normalized voice memos into individual segments...")
-    for seg in raw_segs:
-        # Get the normalized version of this segment
-        normalized_seg = normalized_combined[current_pos : current_pos + len(seg)]
-
-        # Add fades
-        normalized_seg = normalized_seg.fade_in(VOICE_FADE_MS).fade_out(VOICE_FADE_MS)
-
+        normalized_seg = (
+            normalize(segment).fade_in(VOICE_FADE_MS).fade_out(VOICE_FADE_MS)
+        )
         voice_segs.append(normalized_seg)
-        current_pos += len(seg)
 
     logger.info(f"Loaded and normalized {len(voice_segs)} voice memos")
     return voice_segs
