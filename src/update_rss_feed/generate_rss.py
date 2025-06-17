@@ -83,10 +83,6 @@ def list_podcast_files(s3_client) -> List[Dict[str, Any]]:
         for page in pages:
             if "Contents" in page:
                 for obj in page["Contents"]:
-                    if len(podcast_files) >= max_files:
-                        logger.info(f"Reached maximum podcast files limit: {max_files}")
-                        break
-
                     key = obj["Key"]
                     # Only include audio files
                     if key.endswith((".mp3", ".wav", ".m4a", ".ogg")):
@@ -99,11 +95,13 @@ def list_podcast_files(s3_client) -> List[Dict[str, Any]]:
                         }
                         podcast_files.append(file_info)
 
-            if len(podcast_files) >= max_files:
-                break
-
-        # Sort by last modified date (newest first)
+        # Sort by last modified date (newest first) to get the most recent files
         podcast_files.sort(key=lambda x: x["last_modified"], reverse=True)
+
+        if len(podcast_files) > max_files:
+            total_files = len(podcast_files)
+            logger.info(f"Limiting to {max_files} most recent of {total_files} files")
+            podcast_files = podcast_files[:max_files]
 
         logger.info(f"Found {len(podcast_files)} podcast files (limit: {max_files})")
         return podcast_files
