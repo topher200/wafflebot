@@ -25,20 +25,23 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 USER topher
 WORKDIR /app
 
-COPY --chown=topher:topher pyproject.toml uv.lock ./
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-dev --locked
-
-COPY --chown=topher:topher . .
-
-# Create intermediate directories for mounts
-RUN mkdir -p /app/data/voice-memos /app/data/podcast /app/data/dropbox-output
-
+# Set environment variables early for better caching
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
 ENV PYTHONUNBUFFERED=1
+
+# Create intermediate directories for mounts early
+RUN mkdir -p /app/data/voice-memos /app/data/podcast /app/data/dropbox-output
+
+# Copy dependency files first for better layer caching
+COPY --chown=topher:topher pyproject.toml uv.lock ./
+
+RUN --mount=type=cache,target=/home/topher/.cache/uv,uid=${USER_ID},gid=${GROUP_ID} \
+    uv sync --no-dev --locked
+
+# Copy source code last to maximize cache hits when only code changes
+COPY --chown=topher:topher src/ ./src/
+COPY --chown=topher:topher static/ ./static/
 
 FROM base AS file-downloader
 CMD ["uv", "run", "--no-dev", "python", "src/file_downloader/download.py"]
