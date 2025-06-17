@@ -26,9 +26,6 @@ On the host machine, use aws-vault to generate temporary credentials:
 ```bash
 # Generate temporary credentials (valid for 1 hour by default)
 aws-vault exec your-profile -- env | grep AWS_ > .env.aws
-
-# Then source these into your .env file
-cat .env.aws >> .env
 ```
 
 ## Environment Variables
@@ -50,7 +47,7 @@ update-rss-feed:
     context: .
   volumes:
     - rss-output:/app/data/rss           # Local RSS output directory
-    - ./.env:/app/.env:ro                # Environment variables
+    - .env.aws:/app/.env.aws:ro          # AWS credentials only
   command: uv run python src/update-rss-feed/generate_rss.py
 ```
 
@@ -61,7 +58,6 @@ The service can be run as part of the full pipeline or individually:
 ```bash
 # Generate AWS credentials first
 aws-vault exec your-profile -- env | grep AWS_ > .env.aws
-cat .env.aws >> .env
 
 # Run as part of the full pipeline
 ./run-wafflebot.sh

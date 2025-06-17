@@ -152,11 +152,18 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    # (e.g., "my-podcast-staging" instead of "my-podcast-prod")
    ```
 
-3. **Set up AWS credentials for S3 publishing (optional):**
+3. **Set up AWS credentials for S3 publishing:**
 
    ```bash
    # Generate temporary AWS credentials using aws-vault
-   aws-vault exec <your-profile> -- env | grep AWS_ >> .env
+   aws-vault exec <your-profile> -- env | grep AWS_ > .env.aws
+   ```
+
+   or
+
+   ```bash
+   # Edit .env.aws with your AWS credentials
+   cp .env.aws.example .env.aws
    ```
 
 4. **Install the systemd service and timer:**

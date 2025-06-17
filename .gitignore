@@ -33,6 +33,8 @@ Thumbs.db
 # environment files
 .env
 .env.staging
+.env.aws
+.env.aws.staging
 
 # IDE/editor files
 .vscode/
