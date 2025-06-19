@@ -39,17 +39,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
 ENV PYTHONUNBUFFERED=1
 
-FROM base AS file-downloader
-CMD ["uv", "run", "--no-dev", "python", "src/file_downloader/download.py"]
+# Copy and set up entrypoint script
+COPY --chown=topher:topher entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
-FROM base AS audio-mixer
-CMD ["uv", "run", "--no-dev", "python", "src/mixer/generate_audio.py"]
-
-FROM base AS publish-to-dropbox
-CMD ["bash", "src/publish-podcast-to-dropbox/publish.sh"]
-
-FROM base AS publish-podcast-to-s3
-CMD ["bash", "src/publish-podcast-to-s3/publish.sh"]
-
-FROM base AS update-rss-feed
-CMD ["uv", "run", "--no-dev", "python", "src/update_rss_feed/generate_rss.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]

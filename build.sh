@@ -1,11 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Building base image..."
-docker buildx bake wafflebot-base
-
-echo "Building service images..."
-docker buildx bake --load all
+echo "Building unified wafflebot image..."
+docker buildx bake --load wafflebot
 
 echo "Build completed successfully!"
 
