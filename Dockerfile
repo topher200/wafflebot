@@ -39,8 +39,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
 ENV PYTHONUNBUFFERED=1
 
-# Copy and set up entrypoint script
-COPY --chown=topher:topher entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
-
 ENTRYPOINT ["/app/entrypoint.sh"]

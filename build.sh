@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Building unified wafflebot image..."
+echo "Building wafflebot image..."
 docker buildx bake --load wafflebot
 
 echo "Build completed successfully!"
