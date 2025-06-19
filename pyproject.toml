@@ -29,14 +29,7 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "W", "C90"]
 
-[tool.basedpyright]
-include = ["src"]
-exclude = [
-    "**/node_modules",
-    "**/__pycache__",
-]
-pythonVersion = "3.13"
-typeCheckingMode = "off"
+
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
