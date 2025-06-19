@@ -46,7 +46,7 @@ class MinIOTestClient:
 
     def _run_aws_cli_in_container(
         self, args: List[str], volumes: Optional[List[str]] = None
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         docker_cmd = [
             "docker",
             "run",

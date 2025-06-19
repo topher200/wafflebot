@@ -37,6 +37,13 @@ exclude = [
 ]
 pythonVersion = "3.13"
 typeCheckingMode = "basic"
+reportMissingTypeArgument = "none"
+reportImplicitOverride = "none"
+reportUnknownArgumentType = "none"
+reportAny = "none"
+reportMissingParameterType = "none"
+reportUnknownParameterType = "none"
+reportUnannotatedClassAttribute = "none"
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
