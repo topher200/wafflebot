@@ -1,17 +1,22 @@
 services:
   file-downloader:
-    image: wafflebot-file-downloader:latest
+    image: wafflebot:latest
+    command: ["file-downloader"]
 
   audio-mixer:
-    image: wafflebot-audio-mixer:latest
+    image: wafflebot:latest
+    command: ["audio-mixer"]
 
   publish-to-dropbox:
-    image: wafflebot-publish-to-dropbox:latest
+    image: wafflebot:latest
+    command: ["publish-to-dropbox"]
 
   publish-podcast-to-s3:
-    image: wafflebot-publish-podcast-to-s3:latest
+    image: wafflebot:latest
+    command: ["publish-podcast-to-s3"]
 
   update-rss-feed:
-    image: wafflebot-update-rss-feed:latest
+    image: wafflebot:latest
+    command: ["update-rss-feed"]
 
 # Volumes will be defined in override files
