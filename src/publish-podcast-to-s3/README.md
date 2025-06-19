@@ -28,7 +28,7 @@ publish-podcast-to-s3:
   build:
     context: .
   volumes:
-    - podcast-audio:/app/data/podcast:ro  # Read-only access to generated audio
+    - podcast-audio:/app/data/podcast:ro # Read-only access to generated audio
   command: bash src/publish-podcast-to-s3/publish.sh
 ```
 

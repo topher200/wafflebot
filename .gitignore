@@ -57,3 +57,7 @@ build/
 # tests cache
 /tests/cache/*
 !tests/cache/.gitkeep
+
+# Node.js dependencies
+node_modules/
+package-lock.json

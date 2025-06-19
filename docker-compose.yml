@@ -18,5 +18,4 @@ services:
   update-rss-feed:
     image: wafflebot:latest
     command: ["update-rss-feed"]
-
 # Volumes will be defined in override files

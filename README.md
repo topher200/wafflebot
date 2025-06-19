@@ -30,12 +30,12 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
 
    ```bash
    cd infra/terraform
-   
+
    # Copy example files and customize with your values
    cp podcast/podcast.tfvars.example podcast/staging.tfvars
    cp podcast/podcast.tfvars.example podcast/prod.tfvars
    cp test-files/test-files.tfvars.example test-files/test-files.tfvars
-   
+
    # Edit each file with environment-specific values
    # staging.tfvars: podcast_bucket_name = "my-podcast-staging", podcast_domain_name = "staging-podcast.mydomain.com"
    # prod.tfvars: podcast_bucket_name = "my-podcast-prod", podcast_domain_name = "podcast.mydomain.com"
@@ -89,6 +89,7 @@ For detailed infrastructure documentation, see [`infra/terraform/README.md`](inf
    ```
 
    The e2e tests will:
+
    - Download test audio files from URLs (cached locally)
    - Run the complete audio processing pipeline in Docker
    - Verify that files are correctly processed and published
@@ -136,7 +137,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
 
 ### Installation
 
-1. **Update the environment variables:**  
+1. **Update the environment variables:**
 
    ```bash
    cp .env.example .env
@@ -173,6 +174,7 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    ```
 
    This will:
+
    - Copy the systemd service and timer files to `/etc/systemd/system/`
    - Enable and start the timer
    - Set up daily automated runs overnight

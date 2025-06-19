@@ -1,0 +1,8 @@
+node_modules/
+.pytest_cache/
+**/__pycache__/
+.venv/
+data/
+logs/
+.terraform/
+*.tfstate*
