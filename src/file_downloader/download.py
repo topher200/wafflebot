@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import discord
-from dotenv import load_dotenv
 
 from src.utils.logging import setup_logger
 
@@ -137,7 +136,6 @@ async def on_ready():
 
 
 def main():
-    load_dotenv()
     TOKEN = os.getenv("DISCORD_TOKEN")
     CHANNEL_ID_STR = os.getenv("CHANNEL_ID")
 

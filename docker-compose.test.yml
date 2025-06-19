@@ -1,28 +1,33 @@
 services:
   audio-mixer:
     user: root
+    env_file: ./tests/.env.test
     volumes:
-      - ./tests/.env.test:/app/.env:ro
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
       - ./tests/cache/background-music:/app/data/background-music:ro
       - ./tests/cache/test-outputs/podcast:/app/data/podcast
 
   publish-to-dropbox:
     user: root
+    env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
       - ./tests/cache/test-outputs/dropbox:/app/data/dropbox-output
 
   publish-podcast-to-s3:
+    env_file:
+      - ./tests/.env.test
+      - ./tests/.env.aws.test
     volumes:
-      - ./tests/.env.test:/app/.env:ro
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
     depends_on:
       - minio
 
   update-rss-feed:
+    env_file:
+      - ./tests/.env.test
+      - ./tests/.env.aws.test
     volumes:
-      - ./tests/.env.test:/app/.env:ro
       - ./tests/cache/test-outputs/rss:/app/data/rss
     depends_on:
       - minio

@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Publishing podcast to S3..."
+echo "Running publish-podcast-to-s3..."
 
 INPUT_FILE="data/podcast/voice_memo_mix.mp3"
 
@@ -10,11 +10,6 @@ INPUT_FILE="data/podcast/voice_memo_mix.mp3"
 if [ ! -f "$INPUT_FILE" ]; then
     echo "Error: Input file $INPUT_FILE not found"
     exit 1
-fi
-
-# Load environment variables from .env file
-if [ -f ".env" ]; then
-    export $(grep -v '^#' .env | xargs)
 fi
 
 # Check if required environment variables are set

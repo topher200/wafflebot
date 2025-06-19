@@ -86,5 +86,4 @@ output/
 !**/*.tfvars.example
 
 # Environment files
-.env
-.env.staging
+.env*

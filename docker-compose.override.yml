@@ -1,17 +1,18 @@
 services:
   file-downloader:
+    env_file: ${COMPOSE_ENV_FILE:-./.env}
     volumes:
-      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - voice-memos:/app/data/voice-memos
 
   audio-mixer:
+    env_file: ${COMPOSE_ENV_FILE:-./.env}
     volumes:
-      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - ${BACKGROUND_MUSIC_PATH}:/app/data/background-music:ro
       - podcast-audio:/app/data/podcast
       - voice-memos:/app/data/voice-memos:ro
 
   publish-to-dropbox:
+    env_file: ${COMPOSE_ENV_FILE:-./.env}
     volumes:
       - podcast-audio:/app/data/podcast:ro
       - type: bind
@@ -21,13 +22,17 @@ services:
           create_host_path: false
 
   publish-podcast-to-s3:
+    env_file:
+      - ${COMPOSE_ENV_FILE:-./.env}
+      - ${COMPOSE_AWS_ENV_FILE:-./.env.aws}
     volumes:
-      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - podcast-audio:/app/data/podcast:ro
 
   update-rss-feed:
+    env_file:
+      - ${COMPOSE_ENV_FILE:-./.env}
+      - ${COMPOSE_AWS_ENV_FILE:-./.env.aws}
     volumes:
-      - ${COMPOSE_ENV_FILE:-./.env}:/app/.env:ro
       - rss-output:/app/data/rss
 
 volumes:
