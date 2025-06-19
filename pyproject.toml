@@ -18,9 +18,9 @@ dev = [
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
     "ruff>=0.11.7",
-    "pyright>=1.1.350",
     "pydub-stubs~=0.25.1.6",
-    "requests>=2.31.0"
+    "requests>=2.31.0",
+    "basedpyright>=1.29.4",
 ]
 
 [tool.ruff]

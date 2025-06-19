@@ -294,6 +294,6 @@ All workflows run on every pull request and merge to `master`:
 - **`test.yml`** - Fast unit tests (19 tests, ~30 seconds)
 - **`e2e-tests.yml`** - End-to-end tests (~3 tests, 30-50 seconds)
 - **`lint.yml`** - Code linting with Ruff
-- **`typecheck.yml`** - Type checking with Pyright
+- **`typecheck.yml`** - Type checking with basedpyright
 
 Unit and e2e tests run in parallel for fast feedback, ensuring comprehensive testing on every change.

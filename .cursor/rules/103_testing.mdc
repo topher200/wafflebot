@@ -33,7 +33,7 @@ alwaysApply: false
     "test.yml - Fast unit tests on every PR/merge",
     "e2e-tests.yml - Full pipeline tests", 
     "lint.yml - Ruff code linting",
-    "typecheck.yml - Pyright type checking"
+    "typecheck.yml - basedpyright type checking"
 ]
 
 ## Test Configuration
