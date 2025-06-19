@@ -147,6 +147,8 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    ```bash
    cp .env.example .env
    # Edit .env with your Discord credentials and S3 bucket name
+   # create the dropbox output directory
+   mkdir -p ./data/dropbox-output
    ```
 
 2. **For staging environment (optional):**
