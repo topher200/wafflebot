@@ -1,0 +1,19 @@
+services:
+  file-downloader:
+    env_file: .env.staging
+
+  audio-mixer:
+    env_file: .env.staging
+
+  publish-to-dropbox:
+    env_file: .env.staging
+
+  publish-podcast-to-s3:
+    env_file:
+      - .env.staging
+      - .env.aws.staging
+
+  update-rss-feed:
+    env_file:
+      - .env.staging
+      - .env.aws.staging

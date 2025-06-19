@@ -208,16 +208,6 @@ WaffleBot supports both staging and production environments:
   ./run-wafflebot.sh staging
   ```
 
-- **Run individual services:**
-
-  ```bash
-  docker compose run --rm file-downloader
-  docker compose run --rm audio-mixer
-  docker compose run --rm publish-to-dropbox
-  docker compose run --rm publish-podcast-to-s3
-  docker compose run --rm update-rss-feed
-  ```
-
 **Environment Configuration:**
 
 - **Production**: Uses `.env` file
@@ -288,10 +278,12 @@ tests/
 
 ### Docker Configuration
 
-The project uses Docker Compose override files to avoid duplication:
+The project uses multiple Docker Compose files for clean separation of concerns:
 
 - `docker-compose.yml` - Base service definitions
-- `docker-compose.override.yml` - Production volume mounts (auto-loaded)
+- `docker-compose.volumes.yml` - Volume mappings (shared by all environments)
+- `docker-compose.prod.yml` - Production environment files (`.env` + `.env.aws`)
+- `docker-compose.staging.yml` - Staging environment files (`.env.staging` + `.env.aws.staging`)
 - `docker-compose.test.yml` - Test-specific volume mounts
 
 ### GitHub Actions Workflows

@@ -1,0 +1,19 @@
+services:
+  file-downloader:
+    env_file: .env
+
+  audio-mixer:
+    env_file: .env
+
+  publish-to-dropbox:
+    env_file: .env
+
+  publish-podcast-to-s3:
+    env_file:
+      - .env
+      - .env.aws
+
+  update-rss-feed:
+    env_file:
+      - .env
+      - .env.aws
