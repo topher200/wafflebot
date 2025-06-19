@@ -25,8 +25,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 USER topher
 WORKDIR /app
 
+# install uv's python deps
 COPY --chown=topher:topher pyproject.toml uv.lock ./
-
+RUN mkdir -p /home/topher/.cache/uv
 RUN --mount=type=cache,target=/home/topher/.cache/uv,uid=${USER_ID},gid=${GROUP_ID} \
     uv sync --no-dev --locked
 
