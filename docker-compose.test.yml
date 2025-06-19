@@ -1,6 +1,5 @@
 services:
   audio-mixer:
-    user: root
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
@@ -8,7 +7,6 @@ services:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast
 
   publish-to-dropbox:
-    user: root
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
