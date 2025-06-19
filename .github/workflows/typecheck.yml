@@ -11,5 +11,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python-setup
-      - name: Run Pyright
-        run: uv run pyright
+      - name: Run basedpyright
+        run: uv run basedpyright
