@@ -29,8 +29,6 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "W", "C90"]
 
-
-
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["src", "tests"]
