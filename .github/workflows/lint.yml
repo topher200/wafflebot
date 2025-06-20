@@ -21,6 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install prettier
-        run: npm install
+        run: bun install
       - name: Run Prettier Check
-        run: npx prettier --check "**/*.{yml,yaml,md}"
+        run: bun prettier --check "**/*.{yml,yaml,md}"
