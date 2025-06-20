@@ -1,6 +1,9 @@
 services:
   audio-mixer:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    environment:
+      - HOME=/home/topher
+      - UV_CACHE_DIR=/home/topher/.cache/uv
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
@@ -9,6 +12,9 @@ services:
 
   publish-to-dropbox:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    environment:
+      - HOME=/home/topher
+      - UV_CACHE_DIR=/home/topher/.cache/uv
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
