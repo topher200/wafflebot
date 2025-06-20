@@ -6,20 +6,5 @@
     "**/.venv"
   ],
   "pythonVersion": "3.13",
-  "typeCheckingMode": "basic",
-  "reportMissingTypeArgument": "none",
-  "reportImplicitOverride": "none", 
-  "reportUnknownArgumentType": "none",
-  "reportAny": "none",
-  "reportMissingParameterType": "none",
-  "reportUnknownParameterType": "none",
-  "reportUnannotatedClassAttribute": "none",
-  "reportMissingTypeStubs": "none",
-  "reportDeprecated": "none",
-  "reportUnknownMemberType": "none",
-  "reportUnknownVariableType": "none",
-  "reportExplicitAny": "none",
-  "reportUnknownLambdaType": "none",
-  "reportImplicitStringConcatenation": "none",
-  "reportUnusedCallResult": "none"
+  "typeCheckingMode": "basic"
 }
