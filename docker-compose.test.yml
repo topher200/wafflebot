@@ -1,4 +1,11 @@
 services:
+  init-uv-cache:
+    image: alpine:latest
+    user: root
+    command: chown -R 1000:1000 /cache
+    volumes:
+      - uv-cache:/cache
+
   audio-mixer:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     environment:
@@ -10,6 +17,8 @@ services:
       - ./tests/cache/background-music:/app/data/background-music:ro
       - ./tests/cache/test-outputs/podcast:/app/data/podcast
       - uv-cache:/home/topher/.cache/uv
+    depends_on:
+      - init-uv-cache
 
   publish-to-dropbox:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
@@ -21,6 +30,8 @@ services:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
       - ./tests/cache/test-outputs/dropbox:/app/data/dropbox-output
       - uv-cache:/home/topher/.cache/uv
+    depends_on:
+      - init-uv-cache
 
   publish-podcast-to-s3:
     env_file:
