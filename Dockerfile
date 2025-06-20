@@ -34,7 +34,8 @@ RUN --mount=type=cache,target=/home/topher/.cache/uv,uid=${USER_ID},gid=${GROUP_
 COPY --chown=topher:topher . .
 
 # Create intermediate directories for mounts and logs
-RUN mkdir -p /app/data/voice-memos /app/data/podcast /app/data/dropbox-output /app/logs
+RUN mkdir -p /app/data/voice-memos /app/data/podcast /app/data/dropbox-output /app/logs && \
+    chown -R topher:topher /app/logs
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/.venv/lib/python3.13/site-packages:$PYTHONPATH"
