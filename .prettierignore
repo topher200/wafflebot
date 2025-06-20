@@ -1,4 +1,18 @@
+# Ignore everything by default
+*
+
+# Only allow YAML, YML, and Markdown files
+!*.yml
+!*.yaml
+!*.md
+
+# But still ignore specific directories and files that shouldn't be formatted
 node_modules/
+.git/
+dist/
+build/
+*.min.js
+*.min.css
 .pytest_cache/
 **/__pycache__/
 .venv/
