@@ -25,4 +25,4 @@ jobs:
       - name: Install prettier
         run: bun install
       - name: Run Prettier Check
-        run: bun prettier --check "**/*.{yml,yaml,md}"
+        run: bun run prettier --check "**/*.{yml,yaml,md}"
