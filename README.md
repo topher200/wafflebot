@@ -116,13 +116,18 @@ To set up lefthook:
    go install github.com/evilmartians/lefthook@latest
    ```
 
-2. Install the git hooks:
+2. Install dependencies:
+
+   ```bash
+   uv sync
+   bun install
+   ```
+
+3. Install the git hooks:
 
    ```bash
    lefthook install
    ```
-
-After setup, every commit will automatically lint and format staged Python files using ruff.
 
 ## Deployment
 
