@@ -2,7 +2,8 @@
   "include": ["src"],
   "exclude": [
     "**/node_modules",
-    "**/__pycache__"
+    "**/__pycache__",
+    "**/.venv"
   ],
   "pythonVersion": "3.13",
   "typeCheckingMode": "basic",
