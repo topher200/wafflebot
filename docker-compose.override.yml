@@ -38,4 +38,4 @@ services:
 volumes:
   voice-memos:
   podcast-audio:
-  rss-output: 
+  rss-output:

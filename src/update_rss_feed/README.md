@@ -46,8 +46,8 @@ update-rss-feed:
   build:
     context: .
   volumes:
-    - rss-output:/app/data/rss           # Local RSS output directory
-    - .env.aws:/app/.env.aws:ro          # AWS credentials only
+    - rss-output:/app/data/rss # Local RSS output directory
+    - .env.aws:/app/.env.aws:ro # AWS credentials only
   command: uv run python src/update-rss-feed/generate_rss.py
 ```
 
