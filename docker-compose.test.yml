@@ -9,6 +9,7 @@ services:
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
       - ./tests/cache/background-music:/app/data/background-music:ro
       - ./tests/cache/test-outputs/podcast:/app/data/podcast
+      - uv-cache:/home/topher/.cache/uv
 
   publish-to-dropbox:
     user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
@@ -19,6 +20,7 @@ services:
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro
       - ./tests/cache/test-outputs/dropbox:/app/data/dropbox-output
+      - uv-cache:/home/topher/.cache/uv
 
   publish-podcast-to-s3:
     env_file:
@@ -56,4 +58,5 @@ services:
       retries: 30
 
 volumes:
+  uv-cache:
   test-minio-data:
