@@ -6,20 +6,21 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  python-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/python-setup
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-      - name: Install prettier
-        run: npm install
-      - name: Run Prettier Check
-        run: npx prettier --check "**/*.{yml,yaml,md}"
       - name: Run Ruff Lint
         run: uv run ruff check .
       - name: Run Ruff Format Check
         run: uv run ruff format --check .
+
+  prettier-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install prettier
+        run: npm install
+      - name: Run Prettier Check
+        run: npx prettier --check "**/*.{yml,yaml,md}"
