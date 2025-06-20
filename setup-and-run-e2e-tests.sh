@@ -16,6 +16,9 @@ uv sync --group dev
 echo "Building Docker images..."
 ./build.sh
 
+export DOCKER_UID=$(id -u)
+export DOCKER_GID=$(id -g)
+
 # Run the tests
 echo "Running E2E tests..."
 uv run pytest tests/e2e/ -v

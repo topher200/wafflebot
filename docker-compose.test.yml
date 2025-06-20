@@ -1,5 +1,6 @@
 services:
   audio-mixer:
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/voice-memos:/app/data/voice-memos:ro
@@ -7,6 +8,7 @@ services:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast
 
   publish-to-dropbox:
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
     env_file: ./tests/.env.test
     volumes:
       - ./tests/cache/test-outputs/podcast:/app/data/podcast:ro

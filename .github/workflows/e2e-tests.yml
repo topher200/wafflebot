@@ -33,7 +33,10 @@ jobs:
         run: ./build.sh
 
       - name: Run E2E tests
-        run: uv run pytest tests/e2e/ -v --tb=short
+        run: |
+          export DOCKER_UID=$(id -u)
+          export DOCKER_GID=$(id -g)
+          uv run pytest tests/e2e/ -v --tb=short
 
       - name: Clean up Docker resources
         if: always()
