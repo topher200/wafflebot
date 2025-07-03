@@ -94,10 +94,7 @@ def build_voice_track(
             gap_ranges.append((gap_start, gap_end))
             show += AudioSegment.silent(GAP_MS)
 
-            logger.info(
-                f"Gap {idx}: {gap_start}ms-{gap_end}ms "
-                f"(background music only)"
-            )
+            logger.info(f"Gap {idx}: {gap_start}ms-{gap_end}ms (background music only)")
 
             cursor += GAP_MS
 
@@ -118,9 +115,7 @@ def build_voice_track(
     gap_ranges.append((gap_start, gap_end))
     show += AudioSegment.silent(OUTRO_MS)
 
-    logger.info(
-        f"Outro gap: {gap_start}ms-{gap_end}ms (background music only)"
-    )
+    logger.info(f"Outro gap: {gap_start}ms-{gap_end}ms (background music only)")
 
     logger.info(
         f"Built voice track: total length {len(show)}ms with "
@@ -199,8 +194,7 @@ def create_final_mix(
         final_music = final_music.overlay(full_vol_slice, position=fade_start)
 
         logger.info(
-            f"Applied full-volume background music to gap {i + 1}: "
-            f"{start}ms-{end}ms"
+            f"Applied full-volume background music to gap {i + 1}: {start}ms-{end}ms"
         )
 
     # Add lowered background music everywhere else
@@ -208,8 +202,7 @@ def create_final_mix(
     final_music = final_music.overlay(lowered_bg)
 
     logger.info(
-        f"Applied lowered background music "
-        f"({MUSIC_UNDER_VOICE_DB}dB) to entire track"
+        f"Applied lowered background music ({MUSIC_UNDER_VOICE_DB}dB) to entire track"
     )
 
     # Finally overlay the voice track
