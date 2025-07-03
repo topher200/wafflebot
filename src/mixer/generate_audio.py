@@ -44,17 +44,34 @@ def load_voice_memos() -> List[AudioSegment]:
         raise NoVoiceMemosFoundError(f"No voice memos found in {VOICE_DIR}")
 
     voice_segs: List[AudioSegment] = []
+    cumulative_position_ms = INTRO_MS
+
     for f in voice_files:
-        logger.info(f"Loading {f.name}")
+        logger.info(f"Loading voice memo: {f.name}")
         segment = AudioSegment.from_file(str(f))
+        duration_ms = len(segment)
+
         if len(segment) > MAX_LENGTH_MS:
-            logger.info(f"Voice memo {f.name} exceeds 3m 10s limit, truncating...")
+            logger.info(
+                f"Voice memo {f.name} exceeds 3m 10s limit, "
+                f"truncating from {duration_ms}ms to {MAX_LENGTH_MS}ms"
+            )
             segment = segment[:MAX_LENGTH_MS]
+            duration_ms = MAX_LENGTH_MS
 
         normalized_seg = (
             normalize(segment).fade_in(VOICE_FADE_MS).fade_out(VOICE_FADE_MS)
         )
         voice_segs.append(normalized_seg)
+
+        timestamp = datetime.datetime.now().isoformat()
+        logger.info(
+            f"[{timestamp}] Voice memo loaded: {f.name} | Duration: {duration_ms}ms | "
+            f"Timeline position: {cumulative_position_ms}ms-"
+            f"{cumulative_position_ms + duration_ms}ms"
+        )
+
+        cumulative_position_ms += duration_ms + GAP_MS
 
     logger.info(f"Loaded and normalized {len(voice_segs)} voice memos")
     return voice_segs
@@ -64,9 +81,12 @@ def build_voice_track(
     voice_segs: List[AudioSegment],
 ) -> Tuple[AudioSegment, List[Tuple[int, int]]]:
     """Build the voice track with gaps and track the gap ranges."""
-    logger.info("Building voice track...")
+    logger.info("Building voice track with timing details...")
     show = AudioSegment.silent(INTRO_MS)  # add music intro at the start
     gap_ranges = [(0, INTRO_MS)]  # first gap: intro
+
+    timestamp = datetime.datetime.now().isoformat()
+    logger.info(f"[{timestamp}] Intro gap: 0ms-{INTRO_MS}ms (background music only)")
 
     cursor = INTRO_MS
 
@@ -76,8 +96,25 @@ def build_voice_track(
             gap_end = cursor + GAP_MS
             gap_ranges.append((gap_start, gap_end))
             show += AudioSegment.silent(GAP_MS)
+
+            timestamp = datetime.datetime.now().isoformat()
+            logger.info(
+                f"[{timestamp}] Gap {idx}: {gap_start}ms-{gap_end}ms "
+                f"(background music only)"
+            )
+
             cursor += GAP_MS
+
+        voice_start = cursor
+        voice_end = cursor + len(seg)
         show = show.append(seg, crossfade=CROSSFADE_MS)
+
+        timestamp = datetime.datetime.now().isoformat()
+        logger.info(
+            f"[{timestamp}] Voice memo {idx + 1}: {voice_start}ms-{voice_end}ms "
+            f"(voice + background music)"
+        )
+
         cursor += len(seg)
 
     # After last voice memo, add outro
@@ -86,7 +123,15 @@ def build_voice_track(
     gap_ranges.append((gap_start, gap_end))
     show += AudioSegment.silent(OUTRO_MS)
 
-    logger.info(f"Built voice track with {len(gap_ranges)} gaps")
+    timestamp = datetime.datetime.now().isoformat()
+    logger.info(
+        f"[{timestamp}] Outro gap: {gap_start}ms-{gap_end}ms (background music only)"
+    )
+
+    logger.info(
+        f"Built voice track: total length {len(show)}ms with "
+        f"{len(gap_ranges)} music-only gaps"
+    )
     return show, gap_ranges
 
 
@@ -102,10 +147,26 @@ def load_background_music() -> AudioSegment:
         raise NoBackgroundMusicFoundError(f"No background music found in {MUSIC_DIR}")
 
     bg = AudioSegment.empty()
+    cumulative_music_ms = 0
+
     for f in music_files:
-        bg += AudioSegment.from_file(str(f))
+        track = AudioSegment.from_file(str(f))
+        bg += track
+        duration_ms = len(track)
+
+        timestamp = datetime.datetime.now().isoformat()
+        logger.info(
+            f"[{timestamp}] Background music loaded: {f.name} | "
+            f"Duration: {duration_ms}ms | "
+            f"Music timeline: {cumulative_music_ms}ms-"
+            f"{cumulative_music_ms + duration_ms}ms"
+        )
+
+        cumulative_music_ms += duration_ms
+
     logger.info(
-        f"Loaded {len(music_files)} background tracks, total length: {len(bg)}ms"
+        f"Total background music: {len(music_files)} tracks, "
+        f"combined length: {len(bg)}ms"
     )
     return bg
 
@@ -114,7 +175,13 @@ def create_final_mix(
     voice_track: AudioSegment, bg_music: AudioSegment, gap_ranges: List[Tuple[int, int]]
 ) -> AudioSegment:
     """Create the final mix by overlaying voice and background music."""
-    logger.info("Creating final mix...")
+    logger.info("Creating final mix with detailed timeline...")
+
+    timestamp = datetime.datetime.now().isoformat()
+    logger.info(f"[{timestamp}] Final mix timeline summary:")
+    logger.info(f"  - Total track length: {len(voice_track)}ms")
+    logger.info(f"  - Background music length: {len(bg_music)}ms")
+    logger.info(f"  - Music-only gaps: {len(gap_ranges)} segments")
 
     # If background music is too short, loop it
     while len(bg_music) < len(voice_track) + len(voice_track) * 0.1:
@@ -128,7 +195,7 @@ def create_final_mix(
     final_music = AudioSegment.silent(len(voice_track))
 
     # Add full-volume background music only in the gaps
-    for start, end in gap_ranges:
+    for i, (start, end) in enumerate(gap_ranges):
         fade_start = max(0, start - GAP_FADE_MS)
         fade_end = min(len(voice_track), end + GAP_FADE_MS)
         full_vol_slice = (
@@ -139,18 +206,32 @@ def create_final_mix(
         )
         final_music = final_music.overlay(full_vol_slice, position=fade_start)
 
+        timestamp = datetime.datetime.now().isoformat()
+        logger.info(
+            f"[{timestamp}] Applied full-volume background music to gap {i + 1}: "
+            f"{start}ms-{end}ms"
+        )
+
     # Add lowered background music everywhere else
     lowered_bg = bg_music + MUSIC_UNDER_VOICE_DB
-    # Overlay the lowered background music where there isn't full volume music
     final_music = final_music.overlay(lowered_bg)
+
+    timestamp = datetime.datetime.now().isoformat()
+    logger.info(
+        f"[{timestamp}] Applied lowered background music "
+        f"({MUSIC_UNDER_VOICE_DB}dB) to entire track"
+    )
 
     # Finally overlay the voice track
     final_music = final_music.overlay(voice_track)
 
+    timestamp = datetime.datetime.now().isoformat()
+    logger.info(f"[{timestamp}] Overlaid voice track onto background music")
+
     # Add fade in/out to the entire track
     final_music = final_music.fade_in(GAP_FADE_MS).fade_out(GAP_FADE_MS)
 
-    logger.info("Final mix created")
+    logger.info("Final mix created successfully")
     return final_music
 
 
