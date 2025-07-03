@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 import random
 from typing import List, Tuple
@@ -21,7 +22,7 @@ VOICE_FADE_MS = 200  # fade-in/out on memos
 MUSIC_UNDER_VOICE_DB = -40  # dB lowering under speech
 MUSIC_WITHOUT_VOICE_DB = -10  # little lower music when there is no voice
 GAP_FADE_MS = 2000  # fade in/out for gap transitions
-MAX_LENGTH_MS = int((3 * 60 + 5) * 1000)  # 3 minutes 5 seconds in milliseconds
+MAX_LENGTH_MS = int(datetime.timedelta(minutes=3, seconds=5).total_seconds() * 1000)
 
 
 class NoVoiceMemosFoundError(Exception):
