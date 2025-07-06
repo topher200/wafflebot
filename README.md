@@ -54,7 +54,7 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
    ./infra/terraform/scripts/deploy-podcast.sh prod
    ```
 
-4. **Deploy test files bucket:**
+4. **Deploy test files S3 bucket:**
 
    ```bash
    ./infra/terraform/scripts/deploy-test-files.sh
