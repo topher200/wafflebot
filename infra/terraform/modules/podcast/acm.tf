@@ -1,6 +1,5 @@
 # ACM certificate for the custom domain (must be in us-east-1 for CloudFront)
 resource "aws_acm_certificate" "podcast" {
-  provider          = aws.us_east_1
   domain_name       = var.domain_name
   validation_method = "DNS"
 
@@ -35,7 +34,6 @@ resource "aws_route53_record" "podcast_cert_validation" {
 
 # ACM certificate validation
 resource "aws_acm_certificate_validation" "podcast" {
-  provider                = aws.us_east_1
   certificate_arn         = aws_acm_certificate.podcast.arn
   validation_record_fqdns = [for record in aws_route53_record.podcast_cert_validation : record.fqdn]
 

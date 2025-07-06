@@ -3,10 +3,6 @@
 module "podcast" {
   source = "../modules/podcast"
 
-  providers = {
-    aws.us_east_1 = aws.us_east_1
-  }
-
   aws_region      = var.aws_region
   bucket_name     = var.podcast_bucket_name
   domain_name     = var.podcast_domain_name
