@@ -89,8 +89,8 @@ docker compose "${COMPOSE_FILES[@]}" run --rm audio-mixer
 echo "Publishing podcast to Dropbox..."
 docker compose "${COMPOSE_FILES[@]}" run --rm publish-to-dropbox
 
-echo "Publishing podcast to S3..."
-docker compose "${COMPOSE_FILES[@]}" run --rm publish-podcast-to-s3
+# echo "Publishing podcast to S3..."
+# docker compose "${COMPOSE_FILES[@]}" run --rm publish-podcast-to-s3
 
 # echo "Updating RSS feed..."
 # docker compose "${COMPOSE_FILES[@]}" run --rm update-rss-feed
