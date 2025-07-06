@@ -27,3 +27,24 @@ output "acm_certificate_arn" {
   description = "ARN of the ACM certificate"
   value       = module.podcast.acm_certificate_arn
 }
+
+output "iam_user_arn" {
+  description = "ARN of the IAM user for podcast generation"
+  value       = module.podcast.iam_user_arn
+}
+
+output "iam_user_name" {
+  description = "Name of the IAM user for podcast generation"
+  value       = module.podcast.iam_user_name
+}
+
+output "iam_access_key_id" {
+  description = "Access key ID for the IAM user"
+  value       = module.podcast.iam_access_key_id
+}
+
+output "iam_secret_access_key" {
+  description = "Secret access key for the IAM user"
+  value       = module.podcast.iam_secret_access_key
+  sensitive   = true
+}
