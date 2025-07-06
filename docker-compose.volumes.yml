@@ -5,9 +5,13 @@ services:
 
   audio-mixer:
     volumes:
-      - ${BACKGROUND_MUSIC_PATH}:/app/data/background-music:ro
       - podcast-audio:/app/data/podcast
       - voice-memos:/app/data/voice-memos:ro
+      - type: bind
+        source: ${BACKGROUND_MUSIC_PATH}
+        target: /app/data/background-music
+        bind:
+          create_host_path: false
 
   publish-to-dropbox:
     volumes:

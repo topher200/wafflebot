@@ -160,6 +160,15 @@ WaffleBot can be deployed as a daily automated service using Docker Compose and 
    # (e.g., "my-podcast-staging" instead of "my-podcast-prod")
    ```
 
+You can also pre-create the docker volume directories to ensure they are created
+with the correct permissions and populated with background music.
+
+```bash
+mkdir -p ./data/background-music
+cp <music-file> ./data/background-music/
+mkdir -p ./data/dropbox-output
+```
+
 3. **Set up AWS credentials for S3 publishing:**
 
    ```bash
