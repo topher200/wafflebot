@@ -32,5 +32,8 @@ services:
 
 volumes:
   voice-memos:
+    name: wafflebot-${ENVIRONMENT}-voice-memos
   podcast-audio:
+    name: wafflebot-${ENVIRONMENT}-podcast-audio
   rss-output:
+    name: wafflebot-${ENVIRONMENT}-rss-output
