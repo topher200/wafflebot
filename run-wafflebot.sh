@@ -80,6 +80,8 @@ else
     set +a
 fi
 
+export ENVIRONMENT
+
 echo "Running file downloader..."
 docker compose "${COMPOSE_FILES[@]}" run --rm file-downloader
 
