@@ -82,6 +82,13 @@ fi
 
 export ENVIRONMENT
 
+# Validate that ENVIRONMENT is set (defensive check)
+if [ -z "$ENVIRONMENT" ]; then
+    echo "❌ ENVIRONMENT variable is not set!"
+    echo "   This should not happen - please check the script logic above."
+    exit 1
+fi
+
 echo "Running file downloader..."
 docker compose "${COMPOSE_FILES[@]}" run --rm file-downloader
 
