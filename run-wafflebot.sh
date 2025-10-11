@@ -101,3 +101,13 @@ echo "Cleaning up intermediate volumes..."
 docker compose "${COMPOSE_FILES[@]}" down -v
 
 echo "✅ WaffleBot pipeline completed successfully in $ENVIRONMENT environment!"
+
+# Send healthcheck ping only in staging environment
+if [ "$ENVIRONMENT" = "staging" ] && [ -n "${HEALTHCHECK_IO_PING_KEY}" ]; then
+    echo "Sending healthcheck to confirm completion..."
+    curl -m 10 --retry 5 https://hc-ping.com/"${HEALTHCHECK_IO_PING_KEY}"/wafflebot-staging-completes-successfully
+elif [ "$ENVIRONMENT" = "staging" ]; then
+    echo "Healthcheck ping key not set, skipping healthcheck..."
+else
+    echo "Not in staging environment, skipping healthcheck..."
+fi
