@@ -23,6 +23,7 @@ WaffleBot includes AWS infrastructure for hosting the podcast with a custom doma
 - **HTTPS certificate** - Automatic SSL via AWS Certificate Manager
 - **Origin Access Control** - Blocks direct S3 access, only allows CloudFront
 - **Multi-environment support** - Separate staging and production deployments
+- **Healthcheck** - Monitoring of successful completion of the pipeline via Healthcheck.io
 
 ### Setup
 

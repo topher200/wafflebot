@@ -101,3 +101,6 @@ echo "Cleaning up intermediate volumes..."
 docker compose "${COMPOSE_FILES[@]}" down -v
 
 echo "✅ WaffleBot pipeline completed successfully in $ENVIRONMENT environment!"
+
+echo "Sending healthcheck to confirm completion..."
+curl -m 10 --retry 5 https://hc-ping.com/"${HEALTHCHECK_IO_PING_KEY}"/wafflebot-completes-successfully
