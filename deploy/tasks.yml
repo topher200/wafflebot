@@ -1,0 +1,95 @@
+---
+# Deploys wafflebot on topher-homelab. Included by the homelab playbook, which
+# supplies project, project_dir, project_vars, homelab_user, op_vault, op_token
+# and tailnet_domain.
+#
+# Both units are Type=oneshot driven by timers, so nothing here restarts a
+# service: a restart would run the whole pipeline. The timers pick up a changed
+# unit at their next firing.
+
+# Jinja fills in the machine's facts, op inject resolves the references, and
+# both stages stay in memory: the rendered template reaches op on stdin and the
+# result never touches disk until it is checked. Each placed file therefore
+# tracks its template, host_vars and the current 1Password values. `op inject`
+# exits non-zero on an unresolvable reference.
+#
+# The prod and staging pipelines each read a pair of files, the application env
+# and the AWS env, kept apart so credentials rotate without touching
+# configuration. docker compose resolves every env_file in the project at load
+# time, so all four exist whichever pipeline runs.
+- name: Render environment files from 1Password
+  ansible.builtin.command: op inject
+  args:
+    stdin: "{{ lookup('template', project_dir ~ '/deploy/' ~ item.src) }}"
+  environment:
+    OP_SERVICE_ACCOUNT_TOKEN: "{{ op_token }}"
+  vars:
+    wafflebot_env_files:
+      - src: env.tpl.j2
+        dest: .env
+      - src: env.staging.tpl.j2
+        dest: .env.staging
+      - src: env.aws.tpl.j2
+        dest: .env.aws
+      - src: env.aws.staging.tpl.j2
+        dest: .env.aws.staging
+  loop: "{{ wafflebot_env_files }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  register: rendered_env
+  changed_when: false
+  check_mode: false
+  failed_when: false
+  no_log: true
+
+# Asserts over the whole set at once rather than per file: a looped assert
+# prints its item, and here the item carries the rendered secrets. The
+# conditions below name expressions, and op's stderr identifies an unresolved
+# reference without printing any value.
+- name: Require every rendered environment file to be usable
+  ansible.builtin.assert:
+    that:
+      - rendered_env.results | selectattr('rc', 'ne', 0) | list | length == 0
+      - rendered_env.results | map(attribute='stdout') | map('trim') | select('falsy') | list | length == 0
+      - "'op://' not in rendered_env.results | map(attribute='stdout') | join(' ')"
+    fail_msg: >-
+      op inject produced an unusable environment file for {{ project.name }}.
+      Check deploy/*.tpl.j2 against the {{ op_vault }} vault.
+      {{ rendered_env.results | map(attribute='stderr') | select | join(' ') }}
+
+- name: Install environment files
+  ansible.builtin.copy:
+    content: "{{ item.stdout }}\n"
+    dest: "{{ project_dir }}/{{ item.item.dest }}"
+    owner: "{{ homelab_user }}"
+    mode: "0600"
+  loop: "{{ rendered_env.results }}"
+  loop_control:
+    label: "{{ item.item.dest }}"
+  no_log: true
+
+# The image is not built here. run-wafflebot.sh builds it on every run, which
+# keeps the deploy independent of docker and stops a stale image outliving a
+# code change.
+- name: Install systemd units
+  ansible.builtin.template:
+    src: "templates/{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    mode: "0644"
+  loop:
+    - homelab-run-wafflebot.service
+    - homelab-run-wafflebot.timer
+    - homelab-run-wafflebot-staging.service
+    - homelab-run-wafflebot-staging.timer
+  become: true
+  notify: reload systemd
+
+- name: Enable the timers
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: true
+    state: started
+  loop:
+    - homelab-run-wafflebot.timer
+    - homelab-run-wafflebot-staging.timer
+  become: true

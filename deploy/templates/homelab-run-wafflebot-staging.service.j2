@@ -1,0 +1,12 @@
+[Unit]
+Description=WaffleBot Podcast Generator (Staging)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory={{ project_dir }}
+ExecStart={{ project_dir }}/run-wafflebot.sh staging
+User={{ homelab_user }}
+
+[Install]
+WantedBy=multi-user.target

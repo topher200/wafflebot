@@ -186,15 +186,16 @@ mkdir -p ./data/dropbox-output
 
 4. **Install the systemd service and timer:**
 
+   The units come from `deploy/`, installed by the homelab playbook:
+
    ```bash
-   ./install-systemd-scripts.sh
+   cd ~/dev/homelab && make project NAME=wafflebot
    ```
 
-   This will:
-
-   - Copy the systemd service and timer files to `/etc/systemd/system/`
-   - Enable and start the timer
-   - Set up daily automated runs overnight
+   That renders the `.env` files from 1Password, installs the service and
+   timer for both environments, and enables the timers. The schedules live in
+   that repo's `host_vars`, because when the pipeline runs is a fact about the
+   machine rather than about wafflebot.
 
 ### Manual Control
 

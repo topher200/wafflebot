@@ -45,8 +45,8 @@ alwaysApply: false
 ]
 
 ## Production Deployment
-- @systemd/ - Service files for automated daily runs
-- @install-systemd-scripts.sh - Service installation
+- @deploy/templates/ - Unit templates for the automated daily runs
+- @deploy/tasks.yml - Installed by the homelab playbook, which owns the schedule
 - @run-wafflebot.sh - Manual pipeline execution
 
 ## S3 Publishing

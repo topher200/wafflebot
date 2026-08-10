@@ -1,0 +1,9 @@
+[Unit]
+Description=Run WaffleBot daily at {{ project_vars.prod_schedule }} server time
+
+[Timer]
+OnCalendar={{ project_vars.prod_schedule }}
+Persistent=true
+
+[Install]
+WantedBy=timers.target
