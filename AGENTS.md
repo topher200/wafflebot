@@ -15,3 +15,7 @@ The pipeline runs daily at 04:00 on `topher-homelab` as
 days with no memos the unit lands in `failed` state. Treat a `failed`
 wafflebot unit as uninformative until the exit code distinguishes "nothing to
 do" from a real failure.
+
+The Healthcheck.io ping is gated to the staging run on purpose: prod only does
+work when there are new memos, so the nightly staging run is the canary for
+both.
