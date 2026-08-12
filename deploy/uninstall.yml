@@ -1,0 +1,29 @@
+---
+# Removes everything deploy/tasks.yml installs. Run before dropping this
+# project from a host's inventory, so the units go with it.
+
+- name: Stop and disable the timers
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - homelab-run-wafflebot.timer
+    - homelab-run-wafflebot-staging.timer
+  become: true
+  failed_when: false
+
+- name: Remove the unit files
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ item }}"
+    state: absent
+  loop:
+    - homelab-run-wafflebot.service
+    - homelab-run-wafflebot.timer
+    - homelab-run-wafflebot-staging.service
+    - homelab-run-wafflebot-staging.timer
+  become: true
+  notify: reload systemd
+
+# The rendered .env files are left alone. They are reproducible from 1Password
+# but removing a project is not the same as revoking its credentials.

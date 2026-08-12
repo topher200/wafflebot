@@ -192,10 +192,12 @@ mkdir -p ./data/dropbox-output
    cd ~/dev/homelab && make project NAME=wafflebot
    ```
 
-   That renders the `.env` files from 1Password, installs the service and
-   timer for both environments, and enables the timers. The schedules live in
-   that repo's `host_vars`, because when the pipeline runs is a fact about the
-   machine rather than about wafflebot.
+   `deploy/` holds everything needed to run this: the units, the `.env`
+   templates, the defaults they read, and the tasks that install and remove
+   them. Installing them renders the `.env` files from 1Password, installs the
+   service and timer for both environments, and enables the timers.
+   `deploy/defaults.yml` lists every value you can set, including the
+   schedules.
 
 ### Manual Control
 

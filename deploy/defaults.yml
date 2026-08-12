@@ -1,0 +1,8 @@
+---
+# Every knob this project's deploy reads, with the value that is right on any
+# machine. A host overrides only what it needs to differ on; anything absent
+# from its inventory comes from here.
+
+# Both pipelines run overnight, prod after staging has had a night to fail.
+prod_schedule: "04:00:00"
+staging_schedule: "22:00:00"
