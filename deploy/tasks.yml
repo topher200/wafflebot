@@ -1,7 +1,7 @@
 ---
-# Deploys wafflebot on topher-homelab. Included by the homelab playbook, which
-# supplies project, project_dir, project_vars, homelab_user, op_vault, op_token
-# and tailnet_domain.
+# Deploys wafflebot. Included by a host's playbook, which supplies project,
+# project_dir, project_vars, homelab_user, op_vault, op_token and
+# tailnet_domain.
 #
 # Both units are Type=oneshot driven by timers, so nothing here restarts a
 # service: a restart would run the whole pipeline. The timers pick up a changed

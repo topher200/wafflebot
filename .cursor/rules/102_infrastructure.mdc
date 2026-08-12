@@ -46,7 +46,8 @@ alwaysApply: false
 
 ## Production Deployment
 - @deploy/templates/ - Unit templates for the automated daily runs
-- @deploy/tasks.yml - Installed by the homelab playbook, which owns the schedule
+- @deploy/defaults.yml - Every value the deploy reads, including the schedules
+- @deploy/tasks.yml - Installs the units; a host overrides only what differs there
 - @run-wafflebot.sh - Manual pipeline execution
 
 ## S3 Publishing

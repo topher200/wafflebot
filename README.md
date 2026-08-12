@@ -184,19 +184,14 @@ mkdir -p ./data/dropbox-output
    cp .env.aws.example .env.aws
    ```
 
-4. **Install the systemd service and timer:**
+4. **Install the systemd units:**
 
-   The units come from `deploy/`, installed by the homelab playbook:
+   `deploy/` holds the units, the `.env` templates and the tasks that install
+   and remove them. Installing them is what activates the project: it renders
+   the `.env` files from 1Password, installs the service and timer for both
+   environments, and enables the timers.
 
-   ```bash
-   cd ~/dev/homelab && make project NAME=wafflebot
-   ```
-
-   `deploy/` holds everything needed to run this: the units, the `.env`
-   templates, the defaults they read, and the tasks that install and remove
-   them. Installing them renders the `.env` files from 1Password, installs the
-   service and timer for both environments, and enables the timers.
-   `deploy/defaults.yml` lists every value you can set, including the
+   `deploy/defaults.yml` lists every value a host can set, including the
    schedules.
 
 ### Manual Control

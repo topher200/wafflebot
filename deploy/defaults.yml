@@ -3,6 +3,9 @@
 # machine. A host overrides only what it needs to differ on; anything absent
 # from its inventory comes from here.
 
-# Both pipelines run overnight, prod after staging has had a night to fail.
-prod_schedule: "04:00:00"
+# Both pipelines run overnight. Staging before prod to catch any issues early.
 staging_schedule: "22:00:00"
+prod_schedule: "04:00:00"
+
+background_music_path: "~/Dropbox/wafflebot/background-music"
+dropbox_output_path: "~/Dropbox/Apps/PushPod/Haotic Waffles"
